@@ -1,8 +1,1635 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>FG Operaciones v1.2</title></head>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#111111"/>
+<title>FG Conexiones v26</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#111;min-height:100vh}
+#app{max-width:480px;margin:0 auto;padding:1rem;padding-bottom:3rem}
+.screen{display:none}.screen.active{display:block}
+.logo{text-align:center;padding:2rem 0 1.5rem}
+.logo h1{font-size:24px;font-weight:700;letter-spacing:-0.5px}
+.logo p{font-size:13px;color:#666;margin-top:4px}
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:14px;padding:1.25rem;margin-bottom:.9rem}
+.card-title{font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.9rem}
+.fg{margin-bottom:.85rem}
+.fg label{display:block;font-size:13px;color:#555;margin-bottom:5px;font-weight:500}
+.fg input,.fg select{width:100%;padding:11px 13px;border:1px solid #ddd;border-radius:10px;font-size:15px;background:#fff;color:#111;font-family:inherit;-webkit-appearance:none}
+.fg input:focus,.fg select:focus{outline:none;border-color:#111}
+.btn{padding:12px 18px;border:1px solid #ddd;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:#fff;color:#111;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:active{transform:scale(0.97)}
+.btn-full{width:100%}
+.btn-dark{background:#111;color:#fff;border-color:#111}
+.btn-sm{padding:7px 13px;font-size:13px;border-radius:8px}
+.btn-red{border-color:#e74c3c;color:#e74c3c;background:#fff}
+.btn-blue{border-color:#2980b9;color:#2980b9;background:#fff}
+.nav{display:flex;gap:6px;margin-bottom:1rem;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.ntab{padding:8px 14px;border:1px solid #ddd;border-radius:99px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;background:#fff;color:#666;font-family:inherit;flex-shrink:0}
+.ntab.active{background:#111;color:#fff;border-color:#111}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.topbar h2{font-size:17px;font-weight:700}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:1rem}
+.stat{background:#f8f8f5;border-radius:12px;padding:1rem}
+.stat .lbl{font-size:12px;color:#888;margin-bottom:5px;font-weight:500}
+.stat .val{font-size:24px;font-weight:700;color:#111;line-height:1}
+.val.green{color:#1a7a3c}.val.red{color:#c0392b}.val.amber{color:#d68910}
+.pb-wrap{background:#eee;border-radius:99px;height:8px;overflow:hidden;margin:10px 0}
+.pb{height:100%;border-radius:99px;transition:width .5s;background:#111}
+.pb.green{background:#1a7a3c}.pb.amber{background:#d68910}.pb.red{background:#c0392b}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600}
+.b-ok{background:#d5f0de;color:#1a5c30}.b-warn{background:#fdebd0;color:#784212}
+.b-info{background:#d6eaf8;color:#1a5276}.b-red{background:#fadbd8;color:#922b21}
+.b-gray{background:#eee;color:#555}.b-rain{background:#d1e8f5;color:#154360}
+.b-holiday{background:#fadbd8;color:#922b21}
+.msg{border-radius:10px;padding:12px 14px;margin-bottom:.9rem;font-size:14px;line-height:1.5;border:1px solid}
+.msg-ok{background:#d5f0de;color:#1a5c30;border-color:#a9dfbf}
+.msg-warn{background:#fdebd0;color:#784212;border-color:#f8c471}
+.msg-info{background:#d6eaf8;color:#1a5276;border-color:#a9cce3}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0}
+.row:last-child{border-bottom:none}
+.wknav{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.wknav button{background:#fff;border:1px solid #ddd;border-radius:8px;padding:6px 13px;cursor:pointer;font-size:16px;color:#555}
+.wknav span{flex:1;text-align:center;font-size:14px;font-weight:600}
+.toggle-row{display:flex;gap:7px;margin-bottom:.9rem}
+.tog{flex:1;padding:10px;border:1px solid #ddd;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;background:#f8f8f5;color:#666;font-family:inherit;text-align:center;transition:all .15s}
+.tog.active{border-color:#111;background:#fff;color:#111;font-weight:700}
+.tarea-row{display:grid;grid-template-columns:1fr 80px;gap:8px;align-items:center;margin-bottom:10px}
+.tarea-label{font-size:13px;color:#111;line-height:1.3}
+.tarea-sub{font-size:11px;color:#999;margin-top:2px}
+.tarea-row input{width:100%;padding:9px;border:1px solid #ddd;border-radius:8px;font-size:15px;text-align:center;font-family:inherit}
+.preview-box{background:#f8f8f5;border-radius:10px;padding:12px 14px;margin:.5rem 0}
+.pv-row{display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px}
+.pv-row.total{font-weight:700;font-size:14px;border-top:1px solid #e0e0e0;padding-top:8px;margin-top:4px;margin-bottom:0}
+.cal-strip{display:flex;gap:6px;margin-bottom:1rem;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.cal-strip::-webkit-scrollbar{display:none}
+.cal-day{flex-shrink:0;width:52px;text-align:center;border-radius:10px;padding:8px 4px;border:1px solid #e8e8e8;background:#fff;cursor:pointer}
+.cal-day.active{border-color:#111;background:#111;color:#fff}
+.cal-day.rain{background:#d1e8f5;border-color:#85c1e9}
+.cal-day.holiday{background:#fadbd8;border-color:#f1948a}
+.cal-day-name{font-size:10px;color:#999;margin-bottom:3px}
+.cal-day.active .cal-day-name,.cal-day.active .cal-day-total{color:#ccc}
+.cal-day-num{font-size:16px;font-weight:700}
+.cal-day-total{font-size:10px;color:#999;margin-top:2px}
+.saldo-box{border-radius:12px;padding:1rem 1.2rem;margin-bottom:.9rem;border:2px solid}
+.saldo-verde{background:#d5f0de;border-color:#1a7a3c}
+.saldo-rojo{background:#fadbd8;border-color:#c0392b}
+.saldo-cero{background:#f8f8f5;border-color:#ddd}
+.saldo-titulo{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.saldo-monto{font-size:28px;font-weight:800;line-height:1}
+.saldo-sub{font-size:12px;margin-top:4px;opacity:.8}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px;color:#888;font-weight:600;border-bottom:1px solid #eee;font-size:12px}
+td{padding:9px 8px;border-bottom:1px solid #f0f0f0;color:#111}
+tr:last-child td{border-bottom:none}
+.loading{text-align:center;padding:2rem;color:#999;font-size:14px}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid #ddd;border-top-color:#111;border-radius:50%;animation:spin .7s linear infinite;margin-right:6px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-msg{font-size:13px;color:#c0392b;margin-top:7px;min-height:18px}
+.ok-msg{font-size:13px;color:#1a7a3c;margin-top:7px;min-height:18px}
+.solo-badge{background:#f3e5f5;color:#6a1b9a;font-size:11px;padding:2px 7px;border-radius:99px;margin-left:5px;font-weight:600}
+.pago-item{padding:10px 0;border-bottom:1px solid #f0f0f0}
+.pago-item:last-child{border-bottom:none}
+.pago-monto{font-size:16px;font-weight:700;color:#1a7a3c}
+.pago-sub{font-size:12px;color:#888;margin-top:2px}
+.tec-block{background:#f8f8f5;border-radius:12px;padding:1rem;margin-bottom:.7rem}
+.reg-item{padding:10px 0;border-bottom:1px solid #f0f0f0}
+.reg-item:last-child{border-bottom:none}
+.reg-item-header{display:flex;justify-content:space-between;align-items:flex-start}
+.reg-item-btns{display:flex;gap:6px;margin-top:8px}
+.det-tec-block{background:#f8f8f5;border-radius:12px;padding:1rem;margin-bottom:.7rem}
+.det-tec-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem}
+.det-tec-name{font-size:15px;font-weight:700}
+.det-tec-total{font-size:18px;font-weight:800}
+.det-day-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
+.det-day-row:last-child{border-bottom:none}
+.sem-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
+.sem-card{background:#fff;border:2px solid #e8e8e8;border-radius:12px;padding:.9rem;cursor:pointer;transition:all .15s;text-align:center}
+.sem-card.g4-on{border-color:#1a7a3c;background:#d5f0de}
+.sem-card.g3-on{border-color:#1a5276;background:#d6eaf8}
+.sem-card-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#888;margin-bottom:4px}
+.sem-card-grupo{font-size:15px;font-weight:700}
+.sem-card-tecs{font-size:11px;color:#888;margin-top:4px;line-height:1.4}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:480px;max-height:85vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:1rem}
+.modal-footer{display:flex;gap:8px;margin-top:1rem}
+.cuad-config-item{padding:12px 0;border-bottom:1px solid #f0f0f0}
+.cuad-config-item:last-child{border-bottom:none}
+.cuad-config-name{font-size:15px;font-weight:700;margin-bottom:4px}
+.cuad-config-tecs{font-size:13px;color:#666}
+</style>
+</head>
 <body>
-<h1>FG Operaciones v1.2</h1>
-<p>Archivo generado nuevamente. Reemplazá tu index.html con este contenido.</p>
+<div id="app">
+
+<!-- LOGIN -->
+<div id="s-login" class="screen active">
+  <div class="logo"><h1>FG Conexiones</h1><p>Panel de cuadrillas · Gigared</p></div>
+  <div class="card">
+    <div class="fg"><label>Usuario</label><input id="l-user" type="text" placeholder="usuario" autocomplete="off" autocapitalize="none" autocorrect="off"/></div>
+    <div class="fg"><label>Contraseña</label><input id="l-pass" type="password" placeholder="••••••"/></div>
+    <button class="btn btn-dark btn-full" onclick="doLogin()"><span class="spinner" id="l-spin" style="display:none"></span>Ingresar</button>
+    <p class="err-msg" id="l-err"></p>
+  </div>
+</div>
+
+<!-- TÉCNICO -->
+<div id="s-tec" class="screen">
+  <div class="topbar"><h2 id="t-nombre"></h2><span style="font-size:10px;color:#aaa;margin:0 6px">v26</span><button class="btn btn-sm" onclick="logout()">Salir</button></div>
+  <div class="nav">
+    <div class="ntab active" onclick="tecTab('semana',this)">Semana</div>
+    <div class="ntab" onclick="tecTab('cobros',this)">Mis cobros</div>
+    <div class="ntab" onclick="tecTab('dias',this)">Por día</div>
+    <div class="ntab" onclick="tecTab('ranking',this)">Ranking</div>
+  </div>
+  <div id="tt-semana">
+    <div class="wknav"><button onclick="chgWk(-1)">‹</button><span id="t-wk-lbl"></span><button onclick="chgWk(1)">›</button></div>
+    <div id="t-msg"></div>
+    <div class="stat-grid">
+      <div class="stat"><div class="lbl">Total equiv.</div><div class="val" id="t-total">—</div></div>
+      <div class="stat"><div class="lbl">Meta</div><div class="val" id="t-meta">30</div></div>
+      <div class="stat"><div class="lbl">Saldo ant.</div><div class="val" id="t-saldo">—</div></div>
+      <div class="stat"><div class="lbl">Extras</div><div class="val green" id="t-extras">—</div></div>
+    </div>
+    <div id="t-acum-card" class="card" style="margin-bottom:.7rem;padding:.8rem 1rem;display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">Para cumplir la meta</div>
+          <div style="font-size:13px;color:#888;margin-top:2px" id="t-acum-label">—</div>
+        </div>
+        <div style="font-size:22px;font-weight:800" id="t-acum-val">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Progreso</div>
+      <div class="pb-wrap"><div class="pb" id="t-pb" style="width:0%"></div></div>
+      <p id="t-faltan" style="font-size:13px;color:#666;margin-top:6px"></p>
+    </div>
+    <div class="card">
+      <div class="card-title">Días de la semana</div>
+      <div id="t-cal-strip" class="cal-strip"></div>
+      <div id="t-dia-det"></div>
+    </div>
+  </div>
+  <div id="tt-cobros" style="display:none"><div id="t-cobros-content"><div class="loading"><span class="spinner"></span>Cargando...</div></div></div>
+  <div id="tt-dias" style="display:none">
+    <div class="card">
+      <div class="card-title">Seleccioná una fecha</div>
+      <div class="fg" style="margin-bottom:0"><input type="date" id="t-fecha-libre" onchange="renderTecFechaLibre()"/></div>
+    </div>
+    <div id="t-fecha-libre-det"></div>
+  </div>
+  <div id="tt-ranking" style="display:none">
+    <div class="card"><div class="card-title">Ranking por cuadrilla</div><div id="t-rank-cuad"><div class="loading"><span class="spinner"></span></div></div></div>
+    <div class="card"><div class="card-title">Ranking individual</div><div id="t-rank-ind"><div class="loading"><span class="spinner"></span></div></div></div>
+    <p style="font-size:12px;color:#999;text-align:center;margin-top:8px">Más instalaciones equiv. = elegís primero las vacaciones.</p>
+  </div>
+</div>
+
+<!-- ADMIN/JEFE -->
+<div id="s-adm" class="screen">
+  <div class="topbar"><h2 id="a-nombre"></h2><span style="font-size:10px;color:#aaa;margin:0 6px">v26</span><button class="btn btn-sm" onclick="logout()">Salir</button></div>
+  <div class="nav">
+    <div class="ntab active" onclick="admTab('cargar',this)">Cargar</div>
+    <div class="ntab" onclick="admTab('resumen',this)">Resumen</div>
+    <div class="ntab" onclick="admTab('pagos',this)">Pagos</div>
+    <div class="ntab" onclick="admTab('historico',this)">Histórico</div>
+    <div class="ntab" onclick="admTab('dias',this)">Días</div>
+    <div class="ntab" onclick="admTab('saldos',this)">Saldos</div>
+    <div class="ntab" onclick="admTab('config',this)">Config</div>
+    <div class="ntab" onclick="admTab('log',this)">Log</div>
+    <div class="ntab" onclick="admTab('ranking',this)">Ranking</div>
+  </div>
+
+  <div id="at-cargar">
+    <div class="card">
+      <div class="card-title">Carga de tareas</div>
+      <div class="fg"><label>Fecha</label><input type="date" id="a-fecha" onchange="onFechaChange()"/></div>
+      <div id="a-dia-info"></div>
+      <div class="fg"><label>Cuadrilla</label><select id="a-cuad" onchange="onCuadChange()"></select></div>
+      <div class="card-title" style="margin-top:.5rem">Modo de trabajo</div>
+      <div class="toggle-row">
+        <div class="tog active" id="modo-par" onclick="setModo('par')">En pareja</div>
+        <div class="tog" id="modo-solo" onclick="setModo('solo')">Un técnico solo</div>
+      </div>
+      <div id="solo-tec-wrap" style="display:none" class="fg">
+        <label>¿Cuál técnico fue solo?</label>
+        <select id="a-tec-solo"></select>
+      </div>
+      <div id="a-tareas-inputs"></div>
+      <div class="preview-box">
+        <div class="pv-row"><span>Instalaciones equiv.</span><span id="pv-equiv">0.00</span></div>
+        <div class="pv-row"><span>Estado semana</span><span id="pv-estado">—</span></div>
+        <div class="pv-row total"><span>Ganancia extras est.</span><span id="pv-ganancia">$0</span></div>
+      </div>
+      <button class="btn btn-dark btn-full" style="margin-top:.5rem" onclick="guardarCarga()"><span class="spinner" id="a-spin" style="display:none"></span>Guardar</button>
+      <p class="ok-msg" id="a-ok"></p><p class="err-msg" id="a-err"></p>
+    </div>
+    <div class="card">
+      <div class="card-title">Cargado en esta fecha <span style="font-weight:400;color:#aaa;font-size:11px">(tocá para editar o borrar)</span></div>
+      <div id="a-hoy-lista"><p style="font-size:13px;color:#999">Seleccioná una fecha</p></div>
+    </div>
+  </div>
+
+  <div id="at-resumen" style="display:none">
+    <!-- Vista selector -->
+    <div class="nav" style="margin-bottom:.7rem">
+      <div class="ntab active" id="rv-semana" onclick="setResumenVista('semana',this)">Semana</div>
+      <div class="ntab" id="rv-mes" onclick="setResumenVista('mes',this)">Mes</div>
+      <div class="ntab" id="rv-dia" onclick="setResumenVista('dia',this)">Día</div>
+      <div class="ntab" id="rv-rango" onclick="setResumenVista('rango',this)">Rango</div>
+    </div>
+    <!-- Semana -->
+    <div id="rv-ctrl-semana">
+      <div class="wknav"><button onclick="chgAdmWk(-1)">‹</button><span id="a-wk-lbl"></span><button onclick="chgAdmWk(1)">›</button></div>
+      <div class="card">
+        <div class="card-title">¿Quién libra el sábado esta semana?</div>
+        <div class="sem-cards">
+          <div class="sem-card" id="sg4" onclick="setSemConf(1)">
+            <div class="sem-card-label">Grupo 1 · libra</div>
+            <div class="sem-card-grupo" id="sg4-tecs">Enzo-Fernando<br>Daniel-Pablo<br>Maxi-Mauricio<br>Ricardo-Gustavo</div>
+          </div>
+          <div class="sem-card" id="sg3" onclick="setSemConf(2)">
+            <div class="sem-card-label">Grupo 2 · libra</div>
+            <div class="sem-card-grupo" id="sg3-tecs">Carlos-Oscar<br>Pablo-Gerardo<br>Jorge-Gaspar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Mes -->
+    <div id="rv-ctrl-mes" style="display:none">
+      <div class="fg"><label>Mes</label>
+        <select id="rv-mes-sel" onchange="renderAdmResumen()">
+          <option value="2026-01">Enero 2026</option>
+          <option value="2026-02">Febrero 2026</option>
+          <option value="2026-03" selected>Marzo 2026</option>
+          <option value="2026-04">Abril 2026</option>
+          <option value="2026-05">Mayo 2026</option>
+          <option value="2026-06">Junio 2026</option>
+          <option value="2026-07">Julio 2026</option>
+          <option value="2026-08">Agosto 2026</option>
+          <option value="2026-09">Septiembre 2026</option>
+          <option value="2026-10">Octubre 2026</option>
+          <option value="2026-11">Noviembre 2026</option>
+          <option value="2026-12">Diciembre 2026</option>
+        </select>
+      </div>
+    </div>
+    <!-- Día -->
+    <div id="rv-ctrl-dia" style="display:none">
+      <div class="fg"><label>Fecha</label><input type="date" id="rv-dia-fecha" onchange="renderAdmResumen()"/></div>
+    </div>
+    <!-- Rango -->
+    <div id="rv-ctrl-rango" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="fg"><label>Desde</label><input type="date" id="rv-desde" onchange="renderAdmResumen()"/></div>
+        <div class="fg"><label>Hasta</label><input type="date" id="rv-hasta" onchange="renderAdmResumen()"/></div>
+      </div>
+    </div>
+    <div id="a-resumen-lista"><div class="loading"><span class="spinner"></span>Cargando...</div></div>
+  </div>
+
+  <!-- DETALLE CUADRILLA (panel deslizable) -->
+  <div id="at-cuad-detalle" style="display:none">
+    <div class="topbar" style="margin-bottom:.7rem">
+      <button class="btn btn-sm" onclick="volverResumen()">← Volver</button>
+      <h2 id="cuad-det-nombre" style="font-size:15px"></h2>
+    </div>
+    <div id="cuad-det-content"><div class="loading"><span class="spinner"></span></div></div>
+  </div>
+
+  <div id="at-pagos" style="display:none"><div id="at-pagos-content"></div></div>
+
+  <div id="at-historico" style="display:none">
+    <div class="card">
+      <div class="card-title">Cargar total histórico</div>
+      <p style="font-size:13px;color:#666;margin-bottom:.9rem">Total de instalaciones equiv. por técnico para meses anteriores. Solo para el ranking de vacaciones.</p>
+      <div class="fg"><label>Período</label>
+        <select id="hist-periodo">
+          <option value="enero-2025">Enero 2025</option>
+          <option value="febrero-2025">Febrero 2025</option>
+          <option value="marzo-2025">Marzo 2025</option>
+          <option value="abril-2025">Abril 2025</option>
+          <option value="mayo-2025">Mayo 2025</option>
+          <option value="junio-2025">Junio 2025</option>
+          <option value="julio-2025">Julio 2025</option>
+          <option value="agosto-2025">Agosto 2025</option>
+          <option value="septiembre-2025">Septiembre 2025</option>
+          <option value="octubre-2025">Octubre 2025</option>
+          <option value="noviembre-2025">Noviembre 2025</option>
+          <option value="diciembre-2025">Diciembre 2025</option>
+          <option value="enero-2026">Enero 2026</option>
+          <option value="febrero-2026">Febrero 2026</option>
+          <option value="marzo-2026" selected>Marzo 2026</option>
+          <option value="abril-2026">Abril 2026</option>
+          <option value="mayo-2026">Mayo 2026</option>
+          <option value="junio-2026">Junio 2026</option>
+        </select>
+      </div>
+      <div class="fg"><label>Cuadrilla</label><select id="hist-cuad" onchange="renderHistTecs()"></select></div>
+      <div class="fg"><label>Técnico</label><select id="hist-tec"></select></div>
+      <div class="fg"><label>Total instalaciones equiv.</label><input type="number" id="hist-total" step="0.5" placeholder="Ej: 142.5"/></div>
+      <button class="btn btn-dark btn-full" onclick="guardarHistorico()">Guardar histórico</button>
+      <p class="ok-msg" id="hist-ok"></p><p class="err-msg" id="hist-err"></p>
+    </div>
+    <div class="card"><div class="card-title">Histórico cargado</div><div id="hist-lista"><div class="loading"><span class="spinner"></span></div></div></div>
+  </div>
+
+  <div id="at-dias" style="display:none">
+    <div class="card">
+      <div class="card-title">Marcar día especial</div>
+      <div class="fg"><label>Fecha</label><input type="date" id="d-fecha"/></div>
+      <div class="fg"><label>Tipo</label>
+        <select id="d-tipo" onchange="onDTipoChange()">
+          <option value="feriado">Feriado (cuenta 5 equiv. para todos)</option>
+          <option value="lluvia">Día de lluvia</option>
+          <option value="vacaciones">Vacaciones (semana = 30 equiv.)</option>
+          <option value="certificado">Certificado médico (día = 5 equiv.)</option>
+        </select>
+      </div>
+      <div id="d-tec-wrap" style="display:none" class="fg">
+        <label>Técnico</label>
+        <select id="d-tec"></select>
+      </div>
+      <div class="fg"><label>Descripción (opcional)</label><input type="text" id="d-desc" placeholder="Ej: 25 de Mayo, lluvia fuerte..."/></div>
+      <div class="fg"><label>¿Para qué cuadrilla?</label><select id="d-cuad" onchange="onDTipoChange()"></select></div>
+      <button class="btn btn-dark btn-full" onclick="guardarDiaEspecial()">Marcar día</button>
+      <p class="ok-msg" id="d-ok"></p><p class="err-msg" id="d-err"></p>
+    </div>
+    <div class="card"><div class="card-title">Días especiales recientes</div><div id="d-lista"><div class="loading"><span class="spinner"></span></div></div></div>
+  </div>
+
+  <div id="at-saldos" style="display:none">
+    <div class="card">
+      <div class="card-title">Saldo arrastrado entre semanas</div>
+      <div class="fg"><label>Cuadrilla</label><select id="s-cuad" onchange="renderSaldoTecs()"></select></div>
+      <div class="fg"><label>Técnico</label><select id="s-tec"></select></div>
+      <div class="fg"><label>Semana (lunes de inicio)</label><input type="date" id="s-fecha"/></div>
+      <div class="fg"><label>Saldo (negativo si deben)</label><input type="number" id="s-valor" step="0.5" placeholder="Ej: -2.5"/></div>
+      <button class="btn btn-dark btn-full" onclick="guardarSaldo()">Guardar saldo</button>
+      <p class="ok-msg" id="s-ok"></p><p class="err-msg" id="s-err"></p>
+    </div>
+  </div>
+
+  <div id="at-config" style="display:none"><div id="at-config-content"><div class="loading"><span class="spinner"></span></div></div></div>
+
+  <div id="at-log" style="display:none">
+    <div class="card" id="log-activos-card" style="display:none;margin-bottom:.7rem">
+      <div class="card-title">🟢 Ahora conectados</div>
+      <div id="log-activos"></div>
+    </div>
+    <div class="card"><div class="card-title">Historial de accesos</div><div id="log-lista"><div class="loading"><span class="spinner"></span></div></div></div>
+  </div>
+  <div id="at-ranking" style="display:none">
+    <div class="card"><div class="card-title">Ranking por cuadrilla</div><div id="adm-rank-cuad"><div class="loading"><span class="spinner"></span></div></div></div>
+    <div class="card"><div class="card-title">Ranking individual</div><div id="adm-rank-ind"><div class="loading"><span class="spinner"></span></div></div></div>
+    <p style="font-size:12px;color:#999;text-align:center;margin-top:8px">Incluye histórico de enero y febrero. Más instalaciones equiv. = elegís primero las vacaciones.</p>
+  </div>
+</div>
+
+<!-- MODAL EDITAR REGISTRO -->
+<div class="modal-overlay hidden" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title" id="edit-modal-title">Editar registro</div>
+    <div id="edit-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-red" style="flex:1" onclick="borrarRegistro()">🗑 Borrar</button>
+      <button class="btn btn-dark" style="flex:2" onclick="guardarEdicion()">Guardar</button>
+      <button class="btn" style="flex:1" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR CUADRILLA -->
+<div class="modal-overlay hidden" id="cuad-modal">
+  <div class="modal">
+    <div class="modal-title" id="cuad-modal-title">Editar cuadrilla</div>
+    <div class="fg"><label>Nombre de la cuadrilla</label><input type="text" id="cuad-edit-nombre"/></div>
+    <div class="fg"><label>Técnico 1</label><input type="text" id="cuad-edit-tec1"/></div>
+    <div class="fg"><label>Técnico 2</label><input type="text" id="cuad-edit-tec2"/></div>
+    <p style="font-size:12px;color:#888;margin-bottom:1rem">⚠️ Si cambiás el nombre de un técnico, los registros anteriores quedan con el nombre viejo. Solo cambiá si hay un error de tipeo o cambio real de persona.</p>
+    <div class="modal-footer">
+      <button class="btn btn-dark btn-full" onclick="guardarCuadrilla()">Guardar cambios</button>
+      <button class="btn" onclick="cerrarCuadModal()">Cancelar</button>
+    </div>
+    <p class="ok-msg" id="cuad-modal-ok"></p><p class="err-msg" id="cuad-modal-err"></p>
+  </div>
+</div>
+
+</div>
+<script>
+const SB_URL='https://fwsapvunhavwspoblzmt.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2FwdnVuaGF2d3Nwb2Jsem10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1ODEyMDEsImV4cCI6MjA4OTE1NzIwMX0._otys1h9pNj32lRh5RXB1lw7qOG7iB_w0Tznm6r4iNQ';
+
+async function sbFetch(table,method,body,params=''){
+  const r=await fetch(`${SB_URL}/rest/v1/${table}${params}`,{
+    method,headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json',
+    'Prefer':method==='POST'?'return=representation':'return=minimal'},
+    body:body?JSON.stringify(body):null
+  });
+  const t=await r.text();if(!r.ok)throw new Error(t);
+  return t?JSON.parse(t):null;
+}
+const sbGet=(t,p)=>sbFetch(t,'GET',null,p);
+const sbPost=(t,b)=>sbFetch(t,'POST',b);
+const sbDel=(t,p)=>sbFetch(t,'DELETE',null,p);
+const sbPatch=(t,p,b)=>sbFetch(t,'PATCH',b,p);
+async function sbUpsert(table,body){
+  const arr=Array.isArray(body)?body:[body];
+  const r=await fetch(`${SB_URL}/rest/v1/${table}`,{
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
+    body:JSON.stringify(arr)
+  });
+  const t=await r.text();if(!r.ok)throw new Error(t);
+  const p=t?JSON.parse(t):[];return Array.isArray(p)?p:[p];
+}
+
+let CU=null,wkOff=0,admWkOff=0,modo='par';
+let TIPOS=[],CONFIG={},CUADRILLAS=[],diasEsp={},feriadosAR={};
+let selCalDay=null,editRegId=null,editCuadId=null;
+
+// CUADRILLAS se carga dinámicamente desde DB — incluye tec1, tec2
+function getTecs(cuadId){
+  const c=CUADRILLAS.find(x=>x.id===cuadId);
+  if(!c)return[];
+  return[c.tec1,c.tec2].filter(Boolean);
+}
+
+const fmtD=d=>d instanceof Date?d.toISOString().slice(0,10):d;
+const fmtL=d=>new Date(d+'T12:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});
+const fmtFull=d=>new Date(d+'T12:00:00').toLocaleDateString('es-AR',{weekday:'short',day:'2-digit',month:'2-digit'});
+const fmtPesos=n=>'$'+Math.round(n).toLocaleString('es-AR');
+
+function getLunes(off){
+  const h=new Date(),dw=h.getDay(),diff=dw===0?-6:1-dw,l=new Date(h);
+  l.setDate(h.getDate()+diff+off*7);l.setHours(0,0,0,0);return fmtD(l);
+}
+function getDias(lunesStr,conSab){
+  const ns=['Lu','Ma','Mi','Ju','Vi'],fn=['Lunes','Martes','Miércoles','Jueves','Viernes'];
+  if(conSab){ns.push('Sa');fn.push('Sábado');}
+  return ns.map((n,i)=>{const d=new Date(lunesStr+'T12:00:00');d.setDate(d.getDate()+i);return{short:n,full:fn[i],fecha:fmtD(d)};});
+}
+function calcEquiv(tid,cant){
+  const t=TIPOS.find(x=>x.id===tid);if(!t||!cant||t.solo_registra)return 0;
+  return t.resta?-(cant/t.divisor)*t.unidades:(cant/t.divisor)*t.unidades;
+}
+function esDiaEsp(fecha){return diasEsp[fecha]||(feriadosAR[fecha]?{tipo:'feriado',descripcion:feriadosAR[fecha],auto:true}:null);}
+function esDiaEspTec(fecha,tecNombre){
+  // Check individual tech days (vacaciones, certificado)
+  const key=fecha+'_'+tecNombre;
+  return diasEsp[key]||esDiaEsp(fecha);
+}
+function getLunesDesd(fecha){
+  const d=new Date(fecha+'T12:00:00'),dw=d.getDay(),diff=dw===0?-6:1-dw,l=new Date(d);
+  l.setDate(d.getDate()+diff);return fmtD(l);
+}
+
+async function cargarFeriadosAR(){
+  try{const r=await fetch(`https://nolaborables.com.ar/api/v2/feriados/${new Date().getFullYear()}`);const d=await r.json();d.forEach(f=>{const m=String(f.mes).padStart(2,'0'),di=String(f.dia).padStart(2,'0');feriadosAR[`${new Date().getFullYear()}-${m}-${di}`]=f.motivo||'Feriado';});}catch(e){}
+}
+async function cargarDiasEsp(){diasEsp={};try{(await sbGet('dias_especiales','?select=*')).forEach(d=>{
+  diasEsp[d.fecha]=d; // general key
+  if(d.tecnico_nombre)diasEsp[d.fecha+'_'+d.tecnico_nombre]=d; // per-tech key
+});}catch(e){}}
+async function cargarTipos(){TIPOS=await sbGet('tipos_tarea','?activo=eq.true&order=orden');}
+async function cargarConfig(){const d=await sbGet('configuracion','?select=*');CONFIG={};d.forEach(x=>CONFIG[x.clave]=x.valor);}
+async function cargarCuadrillas(){CUADRILLAS=await sbGet('cuadrillas','?activa=eq.true&order=grupo,id&select=*');}
+async function logAct(a,d,t=''){try{await sbPost('log_actividad',{usuario:CU?.username||'?',accion:a,detalle:d,tabla_afectada:t});}catch(e){}}
+
+// LOGIN
+async function doLogin(){
+  const u=document.getElementById('l-user').value.trim().toLowerCase();
+  const p=document.getElementById('l-pass').value;
+  const err=document.getElementById('l-err'),spin=document.getElementById('l-spin');
+  if(!u||!p){err.textContent='Ingresá usuario y contraseña';return;}
+  spin.style.display='inline-block';err.textContent='';
+  try{
+    const d=await sbGet('usuarios',`?username=eq.${u}&password_hash=eq.${p}&activo=eq.true&select=*`);
+    if(!d||!d.length){err.textContent='Usuario o contraseña incorrectos';spin.style.display='none';return;}
+    CU=d[0];spin.style.display='none';wkOff=0;admWkOff=0;
+    await Promise.all([cargarTipos(),cargarConfig(),cargarCuadrillas(),cargarDiasEsp(),cargarFeriadosAR()]);
+    // Registrar login y sesión activa
+    try{
+      await sbPost('log_actividad',{usuario:CU.username,accion:'LOGIN',detalle:CU.nombre+' ('+CU.rol+') ingresó al sistema'});
+      await sbUpsert('sesiones_activas',{username:CU.username,nombre:CU.nombre,rol:CU.rol,ultimo_acceso:new Date().toISOString()});
+    }catch(ex){}
+    startHeartbeat();
+    if(CU.rol==='tecnico'){showScr('tec');await renderTec();}
+    else{showScr('adm');await renderAdm();}
+  }catch(e){err.textContent='Error de conexión.';spin.style.display='none';}
+}
+function startHeartbeat(){
+  if(window._hbInterval)clearInterval(window._hbInterval);
+  window._hbInterval=setInterval(async()=>{
+    if(!CU)return;
+    try{await sbUpsert('sesiones_activas',{username:CU.username,nombre:CU.nombre,rol:CU.rol,ultimo_acceso:new Date().toISOString()});}catch(e){}
+  },5*60*1000);
+}
+function logout(){CU=null;if(window._hbInterval)clearInterval(window._hbInterval);document.getElementById('l-user').value='';document.getElementById('l-pass').value='';showScr('login');}
+function showScr(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('s-'+n).classList.add('active');}
+document.getElementById('l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// =============================================
+// TÉCNICO — sin división, mismo total que cuadrilla
+// =============================================
+async function renderTec(){
+  const c=CUADRILLAS.find(x=>x.id===CU.cuadrilla_id);
+  document.getElementById('t-nombre').textContent=CU.tecnico_ref?CU.nombre:(c?c.nombre:CU.nombre);
+  document.getElementById('t-fecha-libre').value=fmtD(new Date());
+  await renderTecSemana();
+}
+function tecTab(tab,el){
+  ['semana','cobros','dias','ranking'].forEach(t=>document.getElementById('tt-'+t).style.display=t===tab?'block':'none');
+  document.querySelectorAll('#s-tec .ntab').forEach(e=>e.classList.remove('active'));el.classList.add('active');
+  if(tab==='ranking')renderTecRanking();
+  if(tab==='cobros')renderTecCobros();
+}
+function chgWk(d){wkOff+=d;renderTecSemana();}
+
+async function renderTecSemana(){
+  const cuadId=CU.cuadrilla_id,esInd=!!CU.tecnico_ref,lunes=getLunes(wkOff);
+  const dom=new Date(lunes+'T12:00:00');dom.setDate(dom.getDate()+6);
+  document.getElementById('t-wk-lbl').textContent=fmtL(lunes)+' – '+fmtL(fmtD(dom));
+  const meta=parseInt(CONFIG.meta_semanal||30);
+  document.getElementById('t-meta').textContent=meta;
+  const semConf=await getSemConf(lunes);
+  const cuad=CUADRILLAS.find(x=>x.id===cuadId);
+  const libraS=semConf?cuad.grupo===semConf.grupo_libra:false;
+  const dias=getDias(lunes,!libraS);
+  const fechas=dias.map(d=>d.fecha);
+  const regs=await sbGet('registros',`?cuadrilla_id=eq.${cuadId}&fecha=gte.${fechas[0]}&fecha=lte.${fechas[fechas.length-1]}&select=*,registro_tareas(*)`);
+
+  // SIN DIVISIÓN: cada técnico ve el total completo de la cuadrilla
+  // Si es individual y solo, solo cuenta sus registros solo
+  // Si es individual en pareja, cuenta el total completo (no la mitad)
+  let totalSemana=0;const totPorDia={};dias.forEach(d=>totPorDia[d.fecha]=0);
+  regs.forEach(reg=>{
+    let eq=0;(reg.registro_tareas||[]).forEach(rt=>{eq+=calcEquiv(rt.tipo_tarea_id,rt.cantidad);});
+    if(esInd){
+      if(reg.solo&&reg.tecnico_nombre===CU.tecnico_ref){
+        // Este técnico fue solo: vale DOBLE hacia la meta y en display
+        const eqDoble=eq*2;
+        totPorDia[reg.fecha]=(totPorDia[reg.fecha]||0)+eqDoble;
+        totalSemana+=eqDoble;
+      }else if(reg.solo&&reg.tecnico_nombre!==CU.tecnico_ref){
+        // Otro técnico fue solo: neutral para este
+      }else{
+        totPorDia[reg.fecha]=(totPorDia[reg.fecha]||0)+eq;
+        totalSemana+=eq;
+      }
+    }else{
+      totPorDia[reg.fecha]=(totPorDia[reg.fecha]||0)+eq;
+      totalSemana+=eq;
+    }
+  });
+
+  // Vacaciones: si el técnico tiene vacaciones esta semana → suma 30 equiv
+  if(esInd){
+    try{
+      const vacData=await sbGet('dias_especiales',
+        `?cuadrilla_id=eq.${cuadId}&tecnico_nombre=eq.${encodeURIComponent(CU.tecnico_ref)}&tipo=eq.vacaciones&fecha=gte.${fechas[0]}&fecha=lte.${fechas[fechas.length-1]}&select=fecha`);
+      if(vacData&&vacData.length>0){
+        // Tiene vacaciones esta semana: la semana entera = 30 equiv
+        totalSemana=meta;
+        dias.forEach(d=>totPorDia[d.fecha]=0);
+        totPorDia[vacData[0].fecha]=meta; // mostrar en el día que se marcó
+      }
+      // Certificado: días marcados = 5 equiv ese día
+      const certData=await sbGet('dias_especiales',
+        `?cuadrilla_id=eq.${cuadId}&tecnico_nombre=eq.${encodeURIComponent(CU.tecnico_ref)}&tipo=eq.certificado&fecha=gte.${fechas[0]}&fecha=lte.${fechas[fechas.length-1]}&select=fecha`);
+      certData.forEach(d=>{
+        totPorDia[d.fecha]=(totPorDia[d.fecha]||0)+5;
+        totalSemana+=5;
+      });
+    }catch(e){}
+  }
+
+  let saldoTotal=0;
+  try{
+    const sp=esInd?`?cuadrilla_id=eq.${cuadId}&tecnico_nombre=eq.${encodeURIComponent(CU.tecnico_ref)}&semana_inicio=eq.${lunes}`:`?cuadrilla_id=eq.${cuadId}&semana_inicio=eq.${lunes}`;
+    (await sbGet('saldos',sp+'&select=valor')).forEach(s=>saldoTotal+=parseFloat(s.valor));
+  }catch(e){}
+
+  const totalConS=totalSemana+saldoTotal,extras=Math.max(0,totalConS-meta),falta=Math.max(0,meta-totalConS),pct=Math.min(100,Math.round((totalConS/meta)*100));
+  document.getElementById('t-total').textContent=totalConS.toFixed(2);
+  const sEl=document.getElementById('t-saldo');sEl.textContent=(saldoTotal>=0?'+':'')+saldoTotal.toFixed(2);sEl.className='val '+(saldoTotal>=0?'green':'red');
+  const eEl=document.getElementById('t-extras');eEl.textContent=extras>0?'+'+extras.toFixed(2):'0';eEl.className='val '+(extras>0?'green':'');
+  const pb=document.getElementById('t-pb');pb.style.width=pct+'%';pb.className='pb '+(pct>=100?'green':pct>=60?'amber':'red');
+  // Mostrar cuántas instalaciones faltan para la meta
+  const card=document.getElementById('t-acum-card');
+  if(card){
+    card.style.display='block';
+    const faltaInst=Math.max(0,meta-totalSemana);
+    if(faltaInst<=0){
+      card.style.background='#f0faf4';
+      document.getElementById('t-acum-label').textContent='¡Meta cumplida!';
+      const valEl=document.getElementById('t-acum-val');
+      valEl.textContent='✓';valEl.style.color='#1a7a3c';
+    }else{
+      card.style.background='#f8f8f5';
+      document.getElementById('t-acum-label').textContent='equiv. para llegar a 30';
+      const valEl=document.getElementById('t-acum-val');
+      valEl.textContent='Faltan '+faltaInst.toFixed(2);valEl.style.color='#c0392b';
+    }
+  }
+  const diasSin=dias.filter(d=>!totPorDia[d.fecha]).length;
+  let txt=falta<=0?'Meta alcanzada ✓':`Faltan ${falta.toFixed(2)} equiv.`;
+  if(falta>0&&diasSin>0)txt+=` · Promedio: ${(falta/diasSin).toFixed(2)}/día`;
+  document.getElementById('t-faltan').textContent=txt;
+  const msgEl=document.getElementById('t-msg');
+  if(libraS){
+    if(totalConS>=meta)msgEl.innerHTML='<div class="msg msg-ok">¡Meta cumplida! El sábado está libre.</div>';
+    else msgEl.innerHTML=`<div class="msg msg-warn">Sábado libre. Faltan <strong>${falta.toFixed(2)}</strong> instalaciones.</div>`;
+  }else{
+    if(totalConS>=meta)msgEl.innerHTML='<div class="msg msg-ok">¡Meta cumplida! Esta semana trabajan el sábado.</div>';
+    else msgEl.innerHTML=`<div class="msg msg-info">Esta semana trabajan el sábado. Faltan <strong>${falta.toFixed(2)}</strong>.</div>`;
+  }
+  const strip=document.getElementById('t-cal-strip');
+  if(!selCalDay||!fechas.includes(selCalDay))selCalDay=fmtD(new Date());
+  strip.innerHTML=dias.map(d=>{
+    const de=esDiaEsp(d.fecha);let cls='cal-day';
+    if(d.fecha===selCalDay)cls+=' active';
+    else if(de&&de.tipo==='lluvia')cls+=' rain';
+    else if(de&&(de.tipo==='feriado'||de.tipo==='vacaciones'||de.tipo==='certificado'))cls+=' holiday';
+    const tot=totPorDia[d.fecha]||0;
+    return`<div class="${cls}" onclick="selCalDay2('${d.fecha}')"><div class="cal-day-name">${d.short}</div><div class="cal-day-num">${d.fecha.slice(8)}</div><div class="cal-day-total">${tot>0?tot.toFixed(1):'·'}</div></div>`;
+  }).join('');
+  renderCalDet(selCalDay,regs);
+}
+
+function selCalDay2(fecha){selCalDay=fecha;renderTecSemana();}
+
+function renderCalDet(fecha,regs){
+  const el=document.getElementById('t-dia-det');const de=esDiaEsp(fecha);let html='';
+  if(de){
+    const _icons={lluvia:'🌧 Lluvia',feriado:'📅 Feriado',vacaciones:'🏖 Vacaciones',certificado:'🏥 Certificado médico'};
+    const _cls={lluvia:'b-rain',feriado:'b-holiday',vacaciones:'b-info',certificado:'b-gray'};
+    html+=`<div style="margin-bottom:8px"><span class="badge ${_cls[de.tipo]||'b-holiday'}">${_icons[de.tipo]||de.tipo}${de.descripcion?': '+de.descripcion:''}</span></div>`;
+  }
+  const del=regs.filter(r=>r.fecha===fecha);
+  if(!del.length){html+='<p style="font-size:13px;color:#999;padding:8px 0">Sin tareas para este día.</p>';el.innerHTML=html;return;}
+  del.forEach(reg=>{
+    const soloTag=reg.solo?'<span class="solo-badge">solo</span>':'';let eq=0,tarH='';
+    (reg.registro_tareas||[]).forEach(rt=>{const e=calcEquiv(rt.tipo_tarea_id,rt.cantidad);if(rt.cantidad>0){const t=TIPOS.find(x=>x.id===rt.tipo_tarea_id);const eStr=t&&t.solo_registra?'(solo reg.)':(e>=0?'+'+e.toFixed(2):e.toFixed(2));tarH+=`<div class="row"><span style="font-size:13px;color:#555">${t?t.nombre:rt.tipo_tarea_id}</span><span style="font-size:13px">${rt.cantidad} <span style="color:#999">= ${eStr}</span></span></div>`;eq+=e;}});
+    html+=`<div style="margin-top:8px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:14px;font-weight:700">${reg.tecnico_nombre}${soloTag}</span><span style="font-size:16px;font-weight:800">${eq.toFixed(2)}</span></div>${tarH}</div>`;
+  });
+  el.innerHTML=html;
+}
+
+async function renderTecFechaLibre(){
+  const fecha=document.getElementById('t-fecha-libre').value,el=document.getElementById('t-fecha-libre-det');
+  if(!fecha){el.innerHTML='';return;}
+  el.innerHTML='<div class="loading"><span class="spinner"></span>Cargando...</div>';
+  const regs=await sbGet('registros',`?cuadrilla_id=eq.${CU.cuadrilla_id}&fecha=eq.${fecha}&select=*,registro_tareas(*)`);
+  const de=esDiaEsp(fecha);let html='';
+  if(de)html+=`<div class="card"><span class="badge ${de.tipo==='lluvia'?'b-rain':'b-holiday'}">${de.tipo==='lluvia'?'🌧':'📅'} ${de.descripcion||de.tipo}</span></div>`;
+  if(!regs.length){html+='<div class="card"><p style="font-size:13px;color:#999">Sin tareas para esta fecha.</p></div>';el.innerHTML=html;return;}
+  regs.forEach(reg=>{
+    const soloTag=reg.solo?'<span class="solo-badge">solo</span>':'';let eq=0,tarH='';
+    (reg.registro_tareas||[]).forEach(rt=>{const e=calcEquiv(rt.tipo_tarea_id,rt.cantidad);if(rt.cantidad>0){const t=TIPOS.find(x=>x.id===rt.tipo_tarea_id);tarH+=`<div class="row"><span style="font-size:13px;color:#555">${t?t.nombre:rt.tipo_tarea_id}</span><span style="font-size:13px">${rt.cantidad}</span></div>`;eq+=e;}});
+    html+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem"><span style="font-size:15px;font-weight:700">${reg.tecnico_nombre}${soloTag}</span><span style="font-size:18px;font-weight:800">${eq.toFixed(2)}</span></div>${tarH}</div>`;
+  });
+  el.innerHTML=html;
+}
+
+async function renderTecCobros(){
+  if(!CU.tecnico_ref){document.getElementById('t-cobros-content').innerHTML='<div class="card"><p style="font-size:13px;color:#666">Iniciá sesión con tu usuario individual para ver tus cobros.</p></div>';return;}
+  const el=document.getElementById('t-cobros-content');
+  el.innerHTML='<div class="loading"><span class="spinner"></span>Cargando...</div>';
+  const info=await calcSaldoTecnico(CU.cuadrilla_id,CU.tecnico_ref);
+  const saldoCls=info.saldo>0?'saldo-verde':info.saldo<0?'saldo-rojo':'saldo-cero';
+  const saldoColor=info.saldo>0?'#1a5c30':info.saldo<0?'#922b21':'#555';
+  let html=`<div class="saldo-box ${saldoCls}">
+    <div class="saldo-titulo" style="color:${saldoColor}">${info.saldo>0?'Te deben':info.saldo<0?'Saldo negativo':'Al día'}</div>
+    <div class="saldo-monto" style="color:${saldoColor}">${fmtPesos(Math.abs(info.saldo))}</div>
+    <div class="saldo-sub" style="color:${saldoColor}">Extras acum.: ${fmtPesos(info.totalExtras)} · Cobrado: ${fmtPesos(info.totalPagado)}</div>
+  </div>`;
+  // Detalle por semana
+  if(info.detalles&&info.detalles.length){
+    html+='<div class="card"><div class="card-title">Detalle por semana (desde marzo)</div>';
+    info.detalles.forEach(d=>{
+      const neg=d.semTotal<0;
+      const soloInfo=d.solo>0?` (incl. solo×2: ${(d.solo*2).toFixed(2)})`:'';
+      html+=`<div class="row">
+        <div><div style="font-size:13px;font-weight:600">Sem. ${fmtL(d.sem)}</div>
+        <div style="font-size:11px;color:#888">Efectivo: ${d.efectivo.toFixed(2)} equiv${soloInfo}</div></div>
+        <div style="text-align:right">
+          <div style="font-size:14px;font-weight:700;color:${neg?'#c0392b':'#1a7a3c'}">${d.semTotal>=0?'+':''}${fmtPesos(d.semTotal)}</div>
+          <div style="font-size:11px;color:#888">Acum: ${fmtPesos(d.acum)}</div>
+        </div></div>`;
+    });
+    html+='</div>';
+  }
+  html+='<div class="card"><div class="card-title">Historial de pagos</div>';
+  if(!info.pagos.length)html+='<p style="font-size:13px;color:#999">Sin pagos registrados aún.</p>';
+  else info.pagos.forEach(p=>{html+=`<div class="pago-item"><div class="pago-monto">- ${fmtPesos(p.monto)}</div><div class="pago-sub">${fmtFull(p.fecha)}${p.descripcion?' · '+p.descripcion:''}</div></div>`;});
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+async function calcSaldoTecnico(cuadId,tecNombre){
+  const regs=await sbGet('registros',`?cuadrilla_id=eq.${cuadId}&select=*,registro_tareas(tipo_tarea_id,cantidad)`);
+  const diasVac=await sbGet('dias_especiales',`?cuadrilla_id=eq.${cuadId}&tecnico_nombre=eq.${encodeURIComponent(tecNombre)}&tipo=eq.vacaciones&select=fecha`);
+  const diasCert=await sbGet('dias_especiales',`?cuadrilla_id=eq.${cuadId}&tecnico_nombre=eq.${encodeURIComponent(tecNombre)}&tipo=eq.certificado&select=fecha`);
+  const meta=parseInt(CONFIG.meta_semanal||30),precio=parseInt(CONFIG.precio_instalacion||7000);
+  const MARZO2026='2026-03-01';
+  // Semana actual - NO incluir en el cálculo (solo semanas cerradas)
+  const hoy=new Date();
+  const lunesHoy=getLunesDesd(fmtD(hoy));
+  const porSemana={};
+  // Registros
+  regs.forEach(reg=>{
+    if(reg.fecha<MARZO2026)return; // solo desde marzo para pagos
+    if(getLunesDesd(reg.fecha)>=lunesHoy)return; // excluir semana en curso
+    let eq=0;(reg.registro_tareas||[]).forEach(rt=>eq+=calcEquiv(rt.tipo_tarea_id,rt.cantidad));
+    const sem=getLunesDesd(reg.fecha);if(!porSemana[sem])porSemana[sem]={pareja:0,solo:0};
+    if(reg.solo&&reg.tecnico_nombre===tecNombre)porSemana[sem].solo+=eq;
+    else if(!reg.solo)porSemana[sem].pareja+=eq;
+  });
+  // Vacaciones: semana entera = 30 equiv como pareja
+  diasVac.forEach(d=>{
+    if(d.fecha<MARZO2026)return;
+    if(getLunesDesd(d.fecha)>=lunesHoy)return; // excluir semana en curso
+    const sem=getLunesDesd(d.fecha);
+    if(!porSemana[sem])porSemana[sem]={pareja:0,solo:0};
+    porSemana[sem].pareja=meta; // la semana completa cuenta como cumplida
+  });
+  // Certificado: ese dia = 5 equiv como pareja
+  diasCert.forEach(d=>{
+    if(d.fecha<MARZO2026)return;
+    if(getLunesDesd(d.fecha)>=lunesHoy)return; // excluir semana en curso
+    const sem=getLunesDesd(d.fecha);
+    if(!porSemana[sem])porSemana[sem]={pareja:0,solo:0};
+    porSemana[sem].pareja+=5;
+  });
+  // FORMULA: precioUnit = precio/2 = $3500
+  // Pareja: (pareja - 30) × $3500 para cada tecnico
+  // Solo:   (solo×2 - 30) × $3500 para ese tecnico (solo×2 porque vale doble)
+  // Mixto:  (pareja + solo×2 - 30) × $3500
+  // Neutral (pareja=0 y solo=0): skip, el compañero fue solo
+  const precioUnit=precio/2;
+  let totalExtras=0;
+  const detallesSemanas=[];
+  Object.entries(porSemana).sort().forEach(([sem,{pareja,solo}])=>{
+    if(pareja===0&&solo===0)return;
+    const efectivo=pareja+(solo*2);
+    const semTotal=(efectivo-meta)*precioUnit;
+    totalExtras+=semTotal;
+    detallesSemanas.push({sem,pareja,solo,efectivo,semTotal,acum:totalExtras});
+  });
+  const pagosData=await sbGet('pagos',`?cuadrilla_id=eq.${cuadId}&tecnico_nombre=eq.${encodeURIComponent(tecNombre)}&order=fecha.desc`);
+  const totalPagado=pagosData.reduce((s,p)=>s+parseFloat(p.monto),0);
+  return{totalExtras,totalPagado,saldo:totalExtras-totalPagado,pagos:pagosData,detalles:detallesSemanas};
+}
+
+
+async function renderTecRanking(){
+  document.getElementById('t-rank-cuad').innerHTML='<div class="loading"><span class="spinner"></span></div>';
+  document.getElementById('t-rank-ind').innerHTML='<div class="loading"><span class="spinner"></span></div>';
+  const{rankCuad,rankInd}=await buildRankings();
+  document.getElementById('t-rank-cuad').innerHTML=buildRankHTML(rankCuad,'cuad');
+  document.getElementById('t-rank-ind').innerHTML=buildRankHTML(rankInd,'ind');
+}
+
+async function buildRankings(){
+  const regs=await sbGet('registros','?select=cuadrilla_id,tecnico_nombre,solo,registro_tareas(tipo_tarea_id,cantidad)');
+  const hist=await sbGet('historico_totales','?select=*');
+  const totCuad={},totInd={};
+  CUADRILLAS.forEach(c=>{
+    totCuad[c.id]={nombre:c.nombre,total:0};
+    getTecs(c.id).forEach(t=>{totInd[c.id+'_'+t]={nombre:t,cuad:c.nombre,total:0};});
+  });
+  hist.forEach(h=>{
+    if(totCuad[h.cuadrilla_id])totCuad[h.cuadrilla_id].total+=parseFloat(h.total_equiv);
+    const k=h.cuadrilla_id+'_'+h.tecnico_nombre;if(totInd[k])totInd[k].total+=parseFloat(h.total_equiv);
+  });
+  regs.forEach(reg=>{
+    let eq=0;(reg.registro_tareas||[]).forEach(rt=>eq+=calcEquiv(rt.tipo_tarea_id,rt.cantidad));
+    if(totCuad[reg.cuadrilla_id])totCuad[reg.cuadrilla_id].total+=eq;
+    if(reg.solo){
+      // Solo: solo para ese técnico
+      const k=reg.cuadrilla_id+'_'+reg.tecnico_nombre;
+      if(totInd[k])totInd[k].total+=eq;
+    }else{
+      // En pareja: suma a AMBOS técnicos de la cuadrilla
+      getTecs(reg.cuadrilla_id).forEach(t=>{
+        const k=reg.cuadrilla_id+'_'+t;
+        if(totInd[k])totInd[k].total+=eq;
+      });
+    }
+  });
+  return{rankCuad:Object.values(totCuad).sort((a,b)=>b.total-a.total),rankInd:Object.values(totInd).sort((a,b)=>b.total-a.total)};
+}
+
+function buildRankHTML(data,tipo){
+  const medals=['🥇','🥈','🥉'];
+  let h=`<table><thead><tr><th>#</th><th>${tipo==='cuad'?'Cuadrilla':'Técnico'}</th>${tipo==='ind'?'<th>Cuadrilla</th>':''}<th style="text-align:right">Total</th></tr></thead><tbody>`;
+  data.forEach((r,i)=>{h+=`<tr><td>${medals[i]||i+1}</td><td>${r.nombre}</td>${tipo==='ind'?`<td style="font-size:11px;color:#999">${r.cuad}</td>`:''}<td style="text-align:right;font-weight:700">${r.total.toFixed(2)}</td></tr>`;});
+  return h+'</tbody></table>';
+}
+
+// =============================================
+// ADMIN
+// =============================================
+async function renderAdm(){
+  document.getElementById('a-nombre').textContent=CU.nombre;
+  document.getElementById('a-fecha').value=fmtD(new Date());
+  poblarSelects();
+  onCuadChange();renderSaldoTecs();renderHistTecs();
+  buildTareasInputs();onFechaChange();
+  // Actualizar nombres en cards de sábado
+  const g4cuads=CUADRILLAS.filter(c=>c.grupo===1).map(c=>c.nombre).join('<br>');
+  const g3cuads=CUADRILLAS.filter(c=>c.grupo===2).map(c=>c.nombre).join('<br>');
+  document.getElementById('sg4-tecs').innerHTML=g4cuads;
+  document.getElementById('sg3-tecs').innerHTML=g3cuads;
+}
+
+function poblarSelects(){
+  const opts=CUADRILLAS.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  ['a-cuad','s-cuad','hist-cuad'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+  document.getElementById('d-cuad').innerHTML='<option value="">Todas las cuadrillas</option>'+opts;
+}
+
+function admTab(tab,el){
+  ['cargar','resumen','pagos','historico','dias','saldos','config','log','ranking'].forEach(t=>{const e=document.getElementById('at-'+t);if(e)e.style.display=t===tab?'block':'none';});
+  // Also hide cuad-detalle when switching tabs
+  const det=document.getElementById('at-cuad-detalle');if(det)det.style.display='none';
+  document.querySelectorAll('#s-adm .ntab').forEach(e=>e.classList.remove('active'));el.classList.add('active');
+  if(tab==='resumen')renderAdmResumen();
+  if(tab==='pagos')renderPagos();
+  if(tab==='dias')renderDiasEsp();
+  if(tab==='config')renderConfig();
+  if(tab==='log')renderLog();
+  if(tab==='historico')renderHistLista();
+  if(tab==='ranking')renderAdmRanking();
+}
+
+function onCuadChange(){
+  const c=document.getElementById('a-cuad').value;
+  document.getElementById('a-tec-solo').innerHTML=getTecs(c).map(t=>`<option>${t}</option>`).join('');
+  onFechaChange(); // actualizar aviso de día especial al cambiar cuadrilla
+}
+function renderSaldoTecs(){const c=document.getElementById('s-cuad').value;document.getElementById('s-tec').innerHTML=getTecs(c).map(t=>`<option>${t}</option>`).join('');}
+function renderHistTecs(){const c=document.getElementById('hist-cuad').value;document.getElementById('hist-tec').innerHTML=getTecs(c).map(t=>`<option>${t}</option>`).join('');}
+
+function setModo(m){
+  modo=m;
+  document.getElementById('modo-par').classList.toggle('active',m==='par');
+  document.getElementById('modo-solo').classList.toggle('active',m==='solo');
+  document.getElementById('solo-tec-wrap').style.display=m==='solo'?'block':'none';
+  recalcPreview();
+}
+
+function buildTareasInputs(){
+  document.getElementById('a-tareas-inputs').innerHTML=TIPOS.map(t=>
+    `<div class="tarea-row"><div><div class="tarea-label">${t.nombre}${t.solo_registra?'<span class="badge b-gray" style="margin-left:5px;font-size:10px">solo registra</span>':''}</div><div class="tarea-sub">${t.solo_registra?'No afecta el total':'Cada '+t.divisor+' = '+t.unidades+' equiv.'}</div></div><input type="number" id="ti-${t.id}" min="0" placeholder="0" oninput="recalcPreview()"/></div>`
+  ).join('');
+}
+
+async function recalcPreview(){
+  let total=0;TIPOS.forEach(t=>{const v=parseFloat(document.getElementById('ti-'+t.id)?.value||0)||0;total+=calcEquiv(t.id,v);});
+  const meta=parseInt(CONFIG.meta_semanal||30),precio=parseInt(CONFIG.precio_instalacion||7000),mult=modo==='solo'?2:1;
+  document.getElementById('pv-equiv').textContent=total.toFixed(2);
+  try{
+    const cuadId=document.getElementById('a-cuad').value,fecha=document.getElementById('a-fecha').value;
+    if(cuadId&&fecha){
+      const lunes=getLunesDesd(fecha),dom=new Date(lunes+'T12:00:00');dom.setDate(dom.getDate()+6);
+      const regs=await sbGet('registros',`?cuadrilla_id=eq.${cuadId}&fecha=gte.${lunes}&fecha=lte.${fmtD(dom)}&select=registro_tareas(tipo_tarea_id,cantidad)`);
+      let sem=0;regs.forEach(r=>r.registro_tareas.forEach(rt=>sem+=calcEquiv(rt.tipo_tarea_id,rt.cantidad)));
+      const nuevo=sem+total,falta=Math.max(0,meta-nuevo),extra=Math.max(0,nuevo-meta);
+      document.getElementById('pv-estado').textContent=`Sem: ${sem.toFixed(2)} → ${nuevo.toFixed(2)} · ${falta>0?'Faltan: '+falta.toFixed(2):'Extras: +'+extra.toFixed(2)}`;
+      document.getElementById('pv-ganancia').textContent=extra>0?fmtPesos(extra*precio*mult):'$0 (sin meta aún)';
+    }
+  }catch(e){}
+}
+
+async function onFechaChange(){
+  const fecha=document.getElementById('a-fecha').value,info=document.getElementById('a-dia-info');
+  if(!fecha){info.innerHTML='';return;}
+  const cuadId=document.getElementById('a-cuad')?.value;
+  // Buscar día especial filtrando por cuadrilla: mostrar solo si es de esta cuadrilla o general
+  const de=Object.values(diasEsp).find(d=>d.fecha===fecha&&(!d.cuadrilla_id||d.cuadrilla_id===cuadId))
+    ||(feriadosAR[fecha]?{tipo:'feriado',descripcion:feriadosAR[fecha],auto:true}:null);
+  const _tipoIcon={'lluvia':'🌧 Lluvia','feriado':'📅 Feriado','vacaciones':'🏖 Vacaciones','certificado':'🏥 Certificado médico'};
+  const _tipoCls={'lluvia':'msg-info','feriado':'msg-warn','vacaciones':'msg-info','certificado':'msg-warn'};
+  info.innerHTML=de?`<div class="msg ${_tipoCls[de.tipo]||'msg-warn'}" style="margin-bottom:.7rem">${_tipoIcon[de.tipo]||'📋 '+de.tipo}${de.descripcion?': '+de.descripcion:''}</div>`:'';
+  await renderAdmHoy();
+}
+
+async function guardarCarga(){
+  const fecha=document.getElementById('a-fecha').value,cuadId=document.getElementById('a-cuad').value;
+  const esSolo=modo==='solo',tecSolo=esSolo?document.getElementById('a-tec-solo').value:null;
+  const aErr=document.getElementById('a-err'),aOk=document.getElementById('a-ok'),spin=document.getElementById('a-spin');
+  if(!fecha||!cuadId){aErr.textContent='Completá todos los campos.';return;}
+  const tareas=[];TIPOS.forEach(t=>{const v=parseFloat(document.getElementById('ti-'+t.id)?.value||0)||0;if(v>0)tareas.push({tipo_tarea_id:t.id,cantidad:v});});
+  if(!tareas.length){aErr.textContent='Ingresá al menos una tarea.';return;}
+  spin.style.display='inline-block';aErr.textContent='';aOk.textContent='';
+  try{
+    const tecNombre=esSolo?tecSolo:'En pareja';
+    // Buscar registro existente
+    const existing=await sbGet('registros',`?fecha=eq.${fecha}&cuadrilla_id=eq.${cuadId}&tecnico_nombre=eq.${tecNombre}&select=id`);
+    let regId;
+    if(existing&&existing.length>0){
+      regId=existing[0].id;
+      await sbPatch('registros',`?id=eq.${regId}`,{solo:esSolo,created_by:CU.username});
+    }else{
+      const nuevo=await sbPost('registros',{fecha,cuadrilla_id:cuadId,tecnico_nombre:tecNombre,solo:esSolo,created_by:CU.username});
+      regId=nuevo[0].id;
+    }
+    await sbDel('registro_tareas',`?registro_id=eq.${regId}`);
+    for(const t of tareas)await sbPost('registro_tareas',{registro_id:regId,tipo_tarea_id:t.tipo_tarea_id,cantidad:t.cantidad});
+    const eq=tareas.reduce((s,t)=>s+calcEquiv(t.tipo_tarea_id,t.cantidad),0);
+    await logAct('Carga',`${tecNombre}·${cuadId}·${fecha}·${eq.toFixed(2)}·${modo}`,'registros');
+    spin.style.display='none';aOk.textContent='Guardado ✓';setTimeout(()=>aOk.textContent='',2500);
+    TIPOS.forEach(t=>{const el=document.getElementById('ti-'+t.id);if(el)el.value='';});
+    recalcPreview();await renderAdmHoy();
+  }catch(e){spin.style.display='none';aErr.textContent='Error: '+e.message;}
+}
+
+async function renderAdmHoy(){
+  const fecha=document.getElementById('a-fecha').value||fmtD(new Date()),el=document.getElementById('a-hoy-lista');
+  el.innerHTML='<div class="loading"><span class="spinner"></span>Cargando...</div>';
+  try{
+    const regs=await sbGet('registros',`?fecha=eq.${fecha}&select=*,registro_tareas(*)`);
+    if(!regs.length){el.innerHTML='<p style="font-size:13px;color:#999">Nada cargado para esta fecha.</p>';return;}
+    el.innerHTML=regs.map(reg=>{
+      let eq=0;(reg.registro_tareas||[]).forEach(rt=>eq+=calcEquiv(rt.tipo_tarea_id,rt.cantidad));
+      const c=CUADRILLAS.find(x=>x.id===reg.cuadrilla_id);
+      const soloTag=reg.solo?'<span class="solo-badge">solo</span>':'';
+      const tarDet=reg.registro_tareas.filter(rt=>rt.cantidad>0).map(rt=>{const t=TIPOS.find(x=>x.id===rt.tipo_tarea_id);return`${t?t.nombre:rt.tipo_tarea_id}: ${rt.cantidad}`;}).join(' · ');
+      return`<div class="reg-item">
+        <div class="reg-item-header">
+          <div><div style="font-size:14px;font-weight:700">${reg.tecnico_nombre}${soloTag}</div>
+          <div style="font-size:12px;color:#888">${c?c.nombre:reg.cuadrilla_id}</div>
+          <div style="font-size:11px;color:#aaa;margin-top:3px">${tarDet}</div></div>
+          <div style="font-size:18px;font-weight:800">${eq.toFixed(2)}</div>
+        </div>
+        <div class="reg-item-btns">
+          <button class="btn btn-sm btn-blue" onclick="abrirEditar('${reg.id}')">✏️ Editar</button>
+          <button class="btn btn-sm btn-red" onclick="confirmarBorrar('${reg.id}','${reg.tecnico_nombre}')">🗑 Borrar</button>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<p style="font-size:13px;color:#c0392b">Error al cargar.</p>';}
+}
+
+// EDITAR/BORRAR
+async function abrirEditar(regId){
+  editRegId=regId;
+  const regs=await sbGet('registros',`?id=eq.${regId}&select=*,registro_tareas(*)`);
+  if(!regs||!regs.length)return;
+  const reg=regs[0],c=CUADRILLAS.find(x=>x.id===reg.cuadrilla_id);
+  document.getElementById('edit-modal-title').textContent=`Editar · ${reg.tecnico_nombre} · ${fmtFull(reg.fecha)}`;
+  let body=`<p style="font-size:13px;color:#666;margin-bottom:1rem">${c?c.nombre:reg.cuadrilla_id}${reg.solo?' · <span class="solo-badge">solo</span>':''}</p>`;
+  body+=TIPOS.map(t=>{const ex=reg.registro_tareas.find(rt=>rt.tipo_tarea_id===t.id);const val=ex?ex.cantidad:0;
+    return`<div class="tarea-row"><div><div class="tarea-label">${t.nombre}</div><div class="tarea-sub">${t.solo_registra?'Solo registra':'Cada '+t.divisor+' = '+t.unidades+' equiv.'}</div></div><input type="number" id="edit-ti-${t.id}" min="0" value="${val||''}"/></div>`;
+  }).join('');
+  document.getElementById('edit-modal-body').innerHTML=body;
+  document.getElementById('edit-modal').classList.remove('hidden');
+}
+
+async function guardarEdicion(){
+  if(!editRegId)return;
+  const tareas=[];TIPOS.forEach(t=>{const v=parseFloat(document.getElementById('edit-ti-'+t.id)?.value||0)||0;if(v>0)tareas.push({tipo_tarea_id:t.id,cantidad:v});});
+  try{
+    await sbDel('registro_tareas',`?registro_id=eq.${editRegId}`);
+    for(const t of tareas)await sbPost('registro_tareas',{registro_id:editRegId,tipo_tarea_id:t.tipo_tarea_id,cantidad:t.cantidad});
+    await logAct('Edición',`Registro ${editRegId} modificado`,'registros');
+    cerrarModal();await renderAdmHoy();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function confirmarBorrar(regId,tecNombre){
+  if(!confirm(`¿Borrar el registro de ${tecNombre}? No se puede deshacer.`))return;
+  try{
+    await sbDel('registro_tareas',`?registro_id=eq.${regId}`);
+    await sbDel('registros',`?id=eq.${regId}`);
+    await logAct('Borrado',`Registro ${regId} eliminado`,'registros');
+    await renderAdmHoy();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function borrarRegistro(){
+  const r=await sbGet('registros',`?id=eq.${editRegId}&select=tecnico_nombre`);
+  if(r&&r.length)await confirmarBorrar(editRegId,r[0].tecnico_nombre);
+  cerrarModal();
+}
+function cerrarModal(){document.getElementById('edit-modal').classList.add('hidden');editRegId=null;}
+
+// RESUMEN
+let resumenVista='semana';
+function setResumenVista(v,el){
+  resumenVista=v;
+  ['semana','mes','dia','rango'].forEach(t=>{
+    document.getElementById('rv-ctrl-'+t).style.display=t===v?'block':'none';
+  });
+  document.querySelectorAll('#at-resumen .ntab').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  if(v==='dia')document.getElementById('rv-dia-fecha').value=fmtD(new Date());
+  if(v==='rango'){const h=fmtD(new Date());document.getElementById('rv-hasta').value=h;const d=new Date();d.setDate(d.getDate()-6);document.getElementById('rv-desde').value=fmtD(d);}
+  renderAdmResumen();
+}
+function getRangoActual(){
+  if(resumenVista==='semana'){
+    const l=getLunes(admWkOff);const d=new Date(l+'T12:00:00');d.setDate(d.getDate()+6);return{desde:l,hasta:fmtD(d),label:fmtL(l)+' – '+fmtL(fmtD(d))};
+  }else if(resumenVista==='mes'){
+    const m=document.getElementById('rv-mes-sel')?.value||'2026-03';
+    const [y,mo]=m.split('-');const ultimo=new Date(parseInt(y),parseInt(mo),0).getDate();
+    return{desde:`${m}-01`,hasta:`${m}-${String(ultimo).padStart(2,'0')}`,label:document.getElementById('rv-mes-sel')?.options[document.getElementById('rv-mes-sel')?.selectedIndex]?.text||m};
+  }else if(resumenVista==='dia'){
+    const d=document.getElementById('rv-dia-fecha')?.value||fmtD(new Date());
+    return{desde:d,hasta:d,label:fmtFull(d)};
+  }else{
+    const desde=document.getElementById('rv-desde')?.value||fmtD(new Date());
+    const hasta=document.getElementById('rv-hasta')?.value||fmtD(new Date());
+    return{desde,hasta,label:fmtL(desde)+' – '+fmtL(hasta)};
+  }
+}
+function chgAdmWk(d){admWkOff+=d;renderAdmResumen();}
+async function getSemConf(lunes){try{const d=await sbGet('semanas_config',`?semana_inicio=eq.${lunes}&select=*`);return d&&d[0]?d[0]:null;}catch(e){return null;}}
+async function setSemConf(grupo){
+  const lunes=getLunes(admWkOff);
+  await sbUpsert('semanas_config',{semana_inicio:lunes,grupo_libra:grupo,created_by:CU.username});
+  await logAct('Config semana',`Semana ${lunes}: Grupo ${grupo} libra`);
+  renderAdmResumen();
+}
+async function renderAdmResumen(){
+  const {desde,hasta,label}=getRangoActual();
+  if(resumenVista==='semana'){
+    const lunes=getLunes(admWkOff),dom=new Date(lunes+'T12:00:00');dom.setDate(dom.getDate()+6);
+    document.getElementById('a-wk-lbl').textContent=fmtL(lunes)+' – '+fmtL(fmtD(dom));
+    const semConf=await getSemConf(lunes),gl=semConf?semConf.grupo_libra:null;
+    document.getElementById('sg4').className='sem-card'+(gl===1?' g4-on':'');
+    document.getElementById('sg3').className='sem-card'+(gl===2?' g3-on':'');
+  }
+  const el=document.getElementById('a-resumen-lista');
+  el.innerHTML='<div class="loading"><span class="spinner"></span>Cargando...</div>';
+  const meta=parseInt(CONFIG.meta_semanal||30);
+  const regs=await sbGet('registros',`?fecha=gte.${desde}&fecha=lte.${hasta}&select=*,registro_tareas(*)`);
+  // Para vista mes: también incluir totales históricos si el mes no tiene registros
+  let histTotales={};
+  if(resumenVista==='mes'){
+    const mesVal=document.getElementById('rv-mes-sel')?.value||'2026-03';
+    const [y,mo]=mesVal.split('-');
+    const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const periodoKey=`${meses[parseInt(mo)-1]}-${y}`;
+    try{
+      const hist=await sbGet('historico_totales',`?periodo=eq.${periodoKey}&select=*`);
+      hist.forEach(h=>{
+        if(!histTotales[h.cuadrilla_id])histTotales[h.cuadrilla_id]={};
+        histTotales[h.cuadrilla_id][h.tecnico_nombre]=parseFloat(h.total_equiv);
+      });
+    }catch(e){}
+  }
+  let html='';
+  for(const cuad of CUADRILLAS){
+    let totalCuad=0;
+    const regsCuad=regs.filter(r=>r.cuadrilla_id===cuad.id);
+    regsCuad.forEach(r=>{(r.registro_tareas||[]).forEach(rt=>totalCuad+=calcEquiv(rt.tipo_tarea_id,rt.cantidad));});
+    // Si no hay registros pero hay histórico para este mes, usar histórico
+    if(totalCuad===0&&histTotales[cuad.id]){
+      Object.values(histTotales[cuad.id]).forEach(v=>totalCuad+=v);
+    }
+    let saldoCuad=0;
+    if(resumenVista==='semana'){
+      const saldos=await sbGet('saldos',`?semana_inicio=eq.${desde}&cuadrilla_id=eq.${cuad.id}&select=valor`);
+      saldos.forEach(s=>saldoCuad+=parseFloat(s.valor));
+    }
+    const tcs=totalCuad+saldoCuad;
+    let libraS=false;
+    if(resumenVista==='semana'){
+      const semConf=await getSemConf(desde);
+      libraS=semConf?cuad.grupo===semConf.grupo_libra:false;
+    }
+    const extras=Math.max(0,tcs-meta),falta=Math.max(0,meta-tcs);
+    const pct=Math.min(100,Math.round((tcs/meta)*100)),bc=pct>=100?'green':pct>=60?'amber':'red';
+    // Detalle por técnico
+    const tecs=getTecs(cuad.id);
+    let tecHtml='';
+    tecs.forEach(tec=>{
+      let eqTec=0;
+      regsCuad.forEach(reg=>{
+        let eq=0;(reg.registro_tareas||[]).forEach(rt=>eq+=calcEquiv(rt.tipo_tarea_id,rt.cantidad));
+        if(reg.solo&&reg.tecnico_nombre===tec)eqTec+=eq;
+        else if(!reg.solo)eqTec+=eq;
+      });
+      // Si no hay registros, usar histórico
+      if(eqTec===0&&histTotales[cuad.id]&&histTotales[cuad.id][tec])eqTec=histTotales[cuad.id][tec];
+      tecHtml+=`<span style="font-size:12px;color:#888">${tec}: <strong style="color:#111">${eqTec.toFixed(2)}</strong></span> `;
+    });
+    html+=`<div class="card" style="margin-bottom:.7rem;padding:1rem;cursor:pointer" onclick="abrirDetalleCuad('${cuad.id}','${desde}','${hasta}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:14px;font-weight:700">${cuad.nombre}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          ${resumenVista==='semana'?`<span class="badge ${libraS?'b-ok':'b-warn'}">${libraS?'Libra sáb.':'Trabaja sáb.'}</span>`:''}
+          <span style="font-size:11px;color:#aaa">Ver detalle →</span>
+        </div>
+      </div>
+      <div style="margin-bottom:6px">${tecHtml}</div>
+      <div class="pb-wrap"><div class="pb ${bc}" style="width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#888;margin-top:6px">
+        <span>Total: <strong style="color:#111">${tcs.toFixed(2)}</strong>${saldoCuad?` · Saldo: <strong style="color:${saldoCuad<0?'#c0392b':'#1a7a3c'}">${saldoCuad>=0?'+':''}${saldoCuad.toFixed(2)}</strong>`:''}</span>
+        <span>${resumenVista==='semana'?(falta>0?'Faltan: '+falta.toFixed(2):'<span style="color:#1a7a3c">+'+extras.toFixed(2)+' extras sem.</span>'):(tcs>0?'Total: '+tcs.toFixed(2)+' equiv.':'')}</span>
+      </div>
+    </div>`;
+  }
+  el.innerHTML=html;
+}
+
+async function abrirDetalleCuad(cuadId,desde,hasta){
+  document.getElementById('at-resumen').style.display='none';
+  document.getElementById('at-cuad-detalle').style.display='block';
+  const cuad=CUADRILLAS.find(c=>c.id===cuadId);
+  document.getElementById('cuad-det-nombre').textContent=cuad?cuad.nombre:'';
+  const el=document.getElementById('cuad-det-content');
+  el.innerHTML='<div class="loading"><span class="spinner"></span>Cargando...</div>';
+
+  const meta=parseInt(CONFIG.meta_semanal||30);
+  const precio=parseInt(CONFIG.precio_instalacion||7000);
+  const precioUnit=precio/2;
+  const regs=await sbGet('registros',`?cuadrilla_id=eq.${cuadId}&fecha=gte.${desde}&fecha=lte.${hasta}&select=*,registro_tareas(*)`);
+  const diasEspCuad=await sbGet('dias_especiales',`?cuadrilla_id=eq.${cuadId}&select=*`);
+  const tecs=getTecs(cuadId);
+  const MARZO2026='2026-03-01';
+  let html='';
+
+  for(const tec of tecs){
+    // Agrupar por semana (para cálculo financiero correcto)
+    const porSemana={};
+    regs.forEach(reg=>{
+      const sem=getLunesDesd(reg.fecha);
+      if(!porSemana[sem])porSemana[sem]={pareja:0,solo:0,dias:{}};
+      let eq=0;(reg.registro_tareas||[]).forEach(rt=>eq+=calcEquiv(rt.tipo_tarea_id,rt.cantidad));
+      if(reg.solo&&reg.tecnico_nombre===tec){
+        porSemana[sem].solo+=eq;
+        porSemana[sem].dias[reg.fecha]=(porSemana[sem].dias[reg.fecha]||0)+eq;
+      }else if(reg.solo&&reg.tecnico_nombre!==tec){
+        // otro fue solo: neutral
+      }else if(!reg.solo){
+        porSemana[sem].pareja+=eq;
+        porSemana[sem].dias[reg.fecha]=(porSemana[sem].dias[reg.fecha]||0)+eq;
+      }
+    });
+    // Vacaciones
+    diasEspCuad.filter(d=>d.tecnico_nombre===tec&&d.tipo==='vacaciones').forEach(d=>{
+      const sem=getLunesDesd(d.fecha);
+      if(!porSemana[sem])porSemana[sem]={pareja:0,solo:0,dias:{}};
+      porSemana[sem].pareja=meta;
+      porSemana[sem].dias[d.fecha]=(porSemana[sem].dias[d.fecha]||0)+meta;
+    });
+    // Certificado
+    diasEspCuad.filter(d=>d.tecnico_nombre===tec&&d.tipo==='certificado').forEach(d=>{
+      const sem=getLunesDesd(d.fecha);
+      if(!porSemana[sem])porSemana[sem]={pareja:0,solo:0,dias:{}};
+      porSemana[sem].pareja+=5;
+      porSemana[sem].dias[d.fecha]=(porSemana[sem].dias[d.fecha]||0)+5;
+    });
+
+    // Calcular financiero semana a semana (igual que calcSaldoTecnico)
+    let ganTotal=0;
+    let eqDisplay=0; // para mostrar (solo×2 duplicado)
+    let eqPar=0,eqSolo=0;
+    Object.entries(porSemana).sort().forEach(([sem,{pareja,solo,dias}])=>{
+      if(pareja===0&&solo===0)return;
+      const efectivo=pareja+(solo*2);
+      ganTotal+=(efectivo-meta)*precioUnit;
+      eqPar+=pareja;
+      eqSolo+=solo;
+      eqDisplay+=pareja+(solo*2); // mostrar doble
+    });
+
+    // Días para mostrar en lista
+    const diasDisplay={};
+    Object.values(porSemana).forEach(({dias})=>{
+      Object.entries(dias).forEach(([f,v])=>{
+        diasDisplay[f]=(diasDisplay[f]||0)+v;
+      });
+    });
+
+    const neg=ganTotal<0;
+    const soloInfo=eqSolo>0?` (incl. solo×2: ${(eqSolo*2).toFixed(2)})`:'';
+    html+=`<div class="det-tec-block">
+      <div class="det-tec-header">
+        <span class="det-tec-name">${tec}</span>
+        <span class="det-tec-total">${eqDisplay.toFixed(2)} equiv.</span>
+      </div>
+      <div style="font-size:12px;color:#888;margin-bottom:8px">
+        Pareja: ${eqPar.toFixed(2)} · Solo: ${eqSolo.toFixed(2)}${soloInfo} ·
+        <span style="color:${neg?'#c0392b':'#1a7a3c'};font-weight:700">${ganTotal>=0?'+':''}${fmtPesos(ganTotal)}</span>
+      </div>`;
+    // Días
+    Object.entries(diasDisplay).sort().forEach(([fecha,eq])=>{
+      const de=esDiaEsp(fecha);
+      const _icons={lluvia:'🌧',feriado:'📅',vacaciones:'🏖',certificado:'🏥'};
+      const icon=de?(_icons[de.tipo]||''):'';
+      html+=`<div class="det-day-row"><span>${icon} ${fmtFull(fecha)}</span><span style="font-weight:600">${eq.toFixed(2)}</span></div>`;
+    });
+    html+='</div>';
+  }
+
+  // Tareas día a día (todos los registros del período)
+  html+=`<div class="card"><div class="card-title">Todas las tareas del período</div>`;
+  const regsSorted=[...regs].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  if(!regsSorted.length)html+='<p style="font-size:13px;color:#999">Sin registros en este período.</p>';
+  regsSorted.forEach(reg=>{
+    let eq=0,tarH='';
+    (reg.registro_tareas||[]).forEach(rt=>{
+      const e=calcEquiv(rt.tipo_tarea_id,rt.cantidad);
+      if(rt.cantidad>0){
+        const t=TIPOS.find(x=>x.id===rt.tipo_tarea_id);
+        tarH+=`<span style="font-size:12px;color:#888">${t?t.nombre:rt.tipo_tarea_id}: ${rt.cantidad}</span><br>`;
+        eq+=e;
+      }
+    });
+    const soloTag=reg.solo?`<span class="solo-badge">${reg.tecnico_nombre} solo</span>`:'';
+    const parTag=!reg.solo?'<span style="font-size:11px;color:#888"> · En pareja</span>':'';
+    html+=`<div class="row"><div><div style="font-size:14px;font-weight:600">${fmtFull(reg.fecha)}${parTag} ${soloTag}</div><div>${tarH}</div></div><div style="font-size:16px;font-weight:800">${eq.toFixed(2)}</div></div>`;
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+function volverResumen(){
+  document.getElementById('at-cuad-detalle').style.display='none';
+  document.getElementById('at-resumen').style.display='block';
+}
+
+// PAGOS
+async function renderPagos(){
+  const el=document.getElementById('at-pagos-content'),esJefe=CU.rol==='jefe';
+  let html='';
+  if(esJefe){
+    html+=`<div class="card"><div class="card-title">Registrar pago</div>
+      <div class="fg"><label>Cuadrilla</label><select id="pag-cuad" onchange="renderPagTecs()">${CUADRILLAS.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('')}</select></div>
+      <div class="fg"><label>Técnico</label><select id="pag-tec"></select></div>
+      <div class="fg"><label>Fecha del pago</label><input type="date" id="pag-fecha"/></div>
+      <div class="fg"><label>Monto ($)</label><input type="number" id="pag-monto" placeholder="Ej: 35000"/></div>
+      <div class="fg"><label>Descripción (opcional)</label><input type="text" id="pag-desc" placeholder="Extras semana del..."/></div>
+      <button class="btn btn-dark btn-full" onclick="guardarPago()">Registrar pago</button>
+      <p class="ok-msg" id="pag-ok"></p><p class="err-msg" id="pag-err"></p>
+    </div>`;
+  }else{
+    html+=`<div class="msg msg-info" style="margin-bottom:.9rem">Solo el jefe (Gastón Llanes) puede registrar pagos.</div>`;
+  }
+  html+=`<div class="card"><div class="card-title">Saldos por técnico</div><div id="pag-saldos-lista"><div class="loading"><span class="spinner"></span></div></div></div>`;
+  el.innerHTML=html;
+  if(esJefe)setTimeout(()=>renderPagTecs(),100);
+  renderSaldosTodos();
+}
+function renderPagTecs(){const c=document.getElementById('pag-cuad')?.value;if(!c)return;const el=document.getElementById('pag-tec');if(el)el.innerHTML=getTecs(c).map(t=>`<option>${t}</option>`).join('');}
+async function guardarPago(){
+  if(CU.rol!=='jefe'){alert('Solo el jefe puede registrar pagos.');return;}
+  const cuadId=document.getElementById('pag-cuad').value,tec=document.getElementById('pag-tec').value;
+  const fecha=document.getElementById('pag-fecha').value,monto=parseFloat(document.getElementById('pag-monto').value);
+  const desc=document.getElementById('pag-desc').value.trim();
+  if(!fecha||isNaN(monto)||monto<=0){document.getElementById('pag-err').textContent='Completá todos los campos.';return;}
+  try{
+    await sbPost('pagos',{cuadrilla_id:cuadId,tecnico_nombre:tec,fecha,monto,descripcion:desc||null,created_by:CU.username});
+    await logAct('Pago',`${tec}·${fmtPesos(monto)}·${fecha}`,'pagos');
+    document.getElementById('pag-ok').textContent='Pago registrado ✓';setTimeout(()=>document.getElementById('pag-ok').textContent='',2500);
+    document.getElementById('pag-monto').value='';document.getElementById('pag-desc').value='';
+    renderSaldosTodos();
+  }catch(e){document.getElementById('pag-err').textContent='Error: '+e.message;}
+}
+
+async function renderSaldosTodos(){
+  const el=document.getElementById('pag-saldos-lista');if(!el)return;
+  el.innerHTML='<div class="loading"><span class="spinner"></span>Cargando...</div>';
+  let html='';
+  for(const cuad of CUADRILLAS){
+    html+=`<div class="tec-block" style="cursor:pointer" onclick="abrirDetallePagos('${cuad.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
+        <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.05em">${cuad.nombre}</div>
+        <span style="font-size:11px;color:#aaa">Ver detalle →</span>
+      </div>`;
+    for(const tec of getTecs(cuad.id)){
+      const info=await calcSaldoTecnico(cuad.id,tec);
+      const saldo=info.saldo;
+      const saldoCls=saldo>0?'color:#1a7a3c':saldo<0?'color:#c0392b':'color:#888';
+      html+=`<div style="padding:8px 0;border-bottom:1px solid #f0f0f0">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-size:14px;font-weight:600">${tec}</div>
+          <div style="font-size:11px;color:#888">Extras: ${fmtPesos(info.totalExtras)} · Cobrado: ${fmtPesos(info.totalPagado)}</div></div>
+          <div style="font-size:16px;font-weight:800;${saldoCls}">${saldo>=0?'+':''}${fmtPesos(saldo)}</div>
+        </div>
+      </div>`;
+    }
+    html+='</div>';
+  }
+  el.innerHTML=html;
+}
+
+async function abrirDetallePagos(cuadId){
+  const cuad=CUADRILLAS.find(c=>c.id===cuadId);
+  const el=document.getElementById('pag-saldos-lista');
+  el.innerHTML=`
+    <button class="btn btn-sm" onclick="renderSaldosTodos()" style="margin-bottom:1rem">← Volver</button>
+    <div style="font-size:15px;font-weight:700;margin-bottom:1rem">${cuad?cuad.nombre:''}</div>
+    <div id="pag-det-content"><div class="loading"><span class="spinner"></span>Cargando...</div></div>`;
+
+  const tecs=getTecs(cuadId);
+  const precio=parseInt(CONFIG.precio_instalacion||7000);
+  const precioUnit=precio/2;
+  const meta=parseInt(CONFIG.meta_semanal||30);
+  let html='';
+
+  for(const tec of tecs){
+    const info=await calcSaldoTecnico(cuadId,tec);
+    const saldo=info.saldo;
+    const saldoCls=saldo>0?'color:#1a7a3c':saldo<0?'color:#c0392b':'color:#888';
+
+    html+=`<div class="card" style="margin-bottom:.9rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem">
+        <span style="font-size:16px;font-weight:700">${tec}</span>
+        <span style="font-size:20px;font-weight:800;${saldoCls}">${saldo>=0?'+':''}${fmtPesos(saldo)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#888;margin-bottom:.9rem;padding-bottom:.7rem;border-bottom:1px solid #f0f0f0">
+        <span>Extras acumuladas: <strong style="color:#111">${fmtPesos(info.totalExtras)}</strong></span>
+        <span>Cobrado: <strong style="color:#111">${fmtPesos(info.totalPagado)}</strong></span>
+      </div>`;
+
+    // Detalle por semana
+    html+=`<div class="card-title">Detalle por semana</div>`;
+    if(info.detalles&&info.detalles.length){
+      info.detalles.forEach(d=>{
+        const neg=d.semTotal<0;
+        const soloInfo=d.solo>0?` (incl. solo×2: ${(d.solo*2).toFixed(2)})`:'';
+        html+=`<div class="row">
+          <div>
+            <div style="font-size:13px;font-weight:600">Sem. ${fmtL(d.sem)}</div>
+            <div style="font-size:11px;color:#888">Efectivo: ${d.efectivo.toFixed(2)} equiv${soloInfo}</div>
+            <div style="font-size:11px;color:#888">Cálculo: (${d.efectivo.toFixed(2)} - ${meta}) × $${precioUnit.toLocaleString('es-AR')}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:14px;font-weight:700;color:${neg?'#c0392b':'#1a7a3c'}">${d.semTotal>=0?'+':''}${fmtPesos(d.semTotal)}</div>
+            <div style="font-size:11px;color:#888">Acum: ${fmtPesos(d.acum)}</div>
+          </div>
+        </div>`;
+      });
+    } else {
+      html+=`<p style="font-size:13px;color:#999">Sin semanas con actividad desde marzo.</p>`;
+    }
+
+    // Pagos realizados
+    html+=`<div class="card-title" style="margin-top:1rem">Pagos realizados</div>`;
+    if(info.pagos&&info.pagos.length){
+      info.pagos.forEach(p=>{
+        html+=`<div class="row">
+          <div>
+            <div style="font-size:13px;font-weight:600">${fmtFull(p.fecha)}</div>
+            <div style="font-size:11px;color:#888">${p.descripcion||'Sin descripción'}</div>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:#c0392b">-${fmtPesos(p.monto)}</div>
+        </div>`;
+      });
+    } else {
+      html+=`<p style="font-size:13px;color:#999">Sin pagos registrados.</p>`;
+    }
+
+    html+='</div>';
+  }
+
+  document.getElementById('pag-det-content').innerHTML=html;
+}
+
+// HISTÓRICO
+async function guardarHistorico(){
+  const periodo=document.getElementById('hist-periodo').value,cuadId=document.getElementById('hist-cuad').value;
+  const tec=document.getElementById('hist-tec').value,total=parseFloat(document.getElementById('hist-total').value);
+  if(isNaN(total)){document.getElementById('hist-err').textContent='Ingresá un total válido.';return;}
+  try{
+    await sbUpsert('historico_totales',{cuadrilla_id:cuadId,tecnico_nombre:tec,periodo,total_equiv:total,total_extras:0,created_by:CU.username});
+    await logAct('Histórico',`${tec}·${periodo}·${total}`,'historico_totales');
+    document.getElementById('hist-ok').textContent='Histórico guardado ✓';setTimeout(()=>document.getElementById('hist-ok').textContent='',2500);
+    document.getElementById('hist-total').value='';renderHistLista();
+  }catch(e){document.getElementById('hist-err').textContent='Error: '+e.message;}
+}
+async function renderHistLista(){
+  const el=document.getElementById('hist-lista');if(!el)return;
+  const data=await sbGet('historico_totales','?order=periodo,cuadrilla_id');
+  if(!data.length){el.innerHTML='<p style="font-size:13px;color:#999">Sin histórico cargado.</p>';return;}
+  el.innerHTML='<table><thead><tr><th>Período</th><th>Técnico</th><th style="text-align:right">Total</th></tr></thead><tbody>'+
+    data.map(h=>`<tr><td>${h.periodo}</td><td><div>${h.tecnico_nombre}</div><div style="font-size:11px;color:#999">${CUADRILLAS.find(c=>c.id===h.cuadrilla_id)?.nombre||h.cuadrilla_id}</div></td><td style="text-align:right;font-weight:700">${parseFloat(h.total_equiv).toFixed(2)}</td></tr>`).join('')+'</tbody></table>';
+}
+
+// DÍAS ESPECIALES
+function onDTipoChange(){
+  const tipo=document.getElementById('d-tipo').value;
+  const wrap=document.getElementById('d-tec-wrap');
+  const cuadSel=document.getElementById('d-cuad').value;
+  if((tipo==='vacaciones'||tipo==='certificado')&&cuadSel){
+    const c=CUADRILLAS.find(x=>x.id===cuadSel);
+    if(c){
+      const tecs=getTecs(c.id);
+      // Para vacaciones: opción "Ambos" + cada técnico individual
+      const opts=tipo==='vacaciones'
+        ?`<option value="__ambos__">Ambos técnicos</option>`+tecs.map(t=>`<option>${t}</option>`).join('')
+        :tecs.map(t=>`<option>${t}</option>`).join('');
+      document.getElementById('d-tec').innerHTML=opts;
+    }
+    wrap.style.display='block';
+  }else{wrap.style.display='none';}
+}
+
+async function guardarDiaEspecial(){
+  const fecha=document.getElementById('d-fecha').value,tipo=document.getElementById('d-tipo').value;
+  const desc=document.getElementById('d-desc').value.trim(),cuadId=document.getElementById('d-cuad').value||null;
+  const tecSelect=document.getElementById('d-tec');
+  const tecNombre=(tipo==='vacaciones'||tipo==='certificado')&&tecSelect?tecSelect.value:null;
+  if(!fecha){document.getElementById('d-err').textContent='Ingresá una fecha.';return;}
+  if((tipo==='vacaciones'||tipo==='certificado')&&!tecNombre){document.getElementById('d-err').textContent='Seleccioná el técnico.';return;}
+  try{
+    // Si es vacaciones o certificado, guardar para ese técnico
+    // Si hay cuadrilla seleccionada y es vacaciones, también ofrecer guardar para ambos
+    if(tecNombre==='__ambos__'&&cuadId){
+      // Guardar para todos los técnicos de la cuadrilla
+      const tecs=getTecs(cuadId);
+      for(const t of tecs){
+        await sbPost('dias_especiales',{fecha,tipo,descripcion:desc||null,cuadrilla_id:cuadId,tecnico_nombre:t,created_by:CU.username});
+      }
+    }else{
+      await sbPost('dias_especiales',{fecha,tipo,descripcion:desc||null,cuadrilla_id:cuadId,tecnico_nombre:tecNombre||null,created_by:CU.username});
+    }
+    await cargarDiasEsp();document.getElementById('d-ok').textContent='Día marcado ✓';
+    document.getElementById('d-fecha').value='';document.getElementById('d-desc').value='';
+    renderDiasEsp();
+  }catch(e){document.getElementById('d-err').textContent='Error: '+(e.message.includes('duplicate')?'Ese día ya está marcado':e.message);}
+}
+async function renderDiasEsp(){
+  const el=document.getElementById('d-lista');el.innerHTML='<div class="loading"><span class="spinner"></span></div>';
+  const hace30=new Date();hace30.setDate(hace30.getDate()-30);
+  const data=await sbGet('dias_especiales',`?fecha=gte.${fmtD(hace30)}&order=fecha.desc`);
+  if(!data.length){el.innerHTML='<p style="font-size:13px;color:#999">Sin días especiales.</p>';return;}
+  const tipoBadge={feriado:'b-holiday',lluvia:'b-rain',vacaciones:'b-info',certificado:'b-gray'};
+  el.innerHTML=data.map(d=>{
+    const c=d.cuadrilla_id?CUADRILLAS.find(x=>x.id===d.cuadrilla_id):null;
+    const tecTag=d.tecnico_nombre?` · <strong>${d.tecnico_nombre}</strong>`:'';
+    const icon={feriado:'📅',lluvia:'🌧',vacaciones:'🏖',certificado:'🏥'}[d.tipo]||'📋';
+    return`<div class="row"><div><div style="font-size:14px">${icon} ${fmtFull(d.fecha)} <span class="badge ${tipoBadge[d.tipo]||'b-gray'}">${d.tipo}</span></div><div style="font-size:12px;color:#888">${c?'· '+c.nombre:'· Todas'}${tecTag} ${d.descripcion?'· '+d.descripcion:''}</div></div><button class="btn btn-sm btn-red" onclick="elimDiaEsp('${d.id}')">✕</button></div>`;
+  }).join('');
+}
+async function elimDiaEsp(id){await sbDel('dias_especiales',`?id=eq.${id}`);await cargarDiasEsp();renderDiasEsp();}
+
+// SALDOS
+async function guardarSaldo(){
+  const cuadId=document.getElementById('s-cuad').value,tec=document.getElementById('s-tec').value;
+  const fecha=document.getElementById('s-fecha').value,valor=parseFloat(document.getElementById('s-valor').value);
+  if(!fecha||isNaN(valor)){document.getElementById('s-err').textContent='Completá todos los campos.';return;}
+  try{
+    await sbUpsert('saldos',{cuadrilla_id:cuadId,tecnico_nombre:tec,semana_inicio:fecha,valor,created_by:CU.username});
+    await logAct('Saldo',`${tec}·${fecha}·${valor}`,'saldos');
+    document.getElementById('s-ok').textContent='Saldo guardado ✓';setTimeout(()=>document.getElementById('s-ok').textContent='',2500);
+  }catch(e){document.getElementById('s-err').textContent='Error: '+e.message;}
+}
+
+// CONFIG — con gestión de cuadrillas para el jefe
+async function renderConfig(){
+  const el=document.getElementById('at-config-content'),esJefe=CU.rol==='jefe';
+  if(esJefe){
+    el.innerHTML=`
+    <div class="card"><div class="card-title">Valores generales</div>
+      <div class="fg"><label>Precio por instalación ($)</label><input type="number" id="cfg-precio" value="${CONFIG.precio_instalacion||7000}" step="100"/></div>
+      <div class="fg"><label>Meta semanal (instalaciones equiv.)</label><input type="number" id="cfg-meta" value="${CONFIG.meta_semanal||30}"/></div>
+      <button class="btn btn-dark btn-sm" onclick="guardarConfigPrecio()">Guardar</button>
+      <p class="ok-msg" id="cfg-ok"></p>
+    </div>
+    <div class="card">
+      <div class="card-title">Cuadrillas — nombres y técnicos</div>
+      <p style="font-size:13px;color:#666;margin-bottom:.9rem">Tocá una cuadrilla para editar el nombre o cambiar los técnicos.</p>
+      <div id="cfg-cuad-lista">
+        ${CUADRILLAS.map(c=>`
+          <div class="cuad-config-item">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div class="cuad-config-name">${c.nombre}</div>
+                <div class="cuad-config-tecs">${c.tec1||'—'} · ${c.tec2||'—'} <span class="badge b-gray" style="margin-left:4px">Grupo ${c.grupo}</span></div>
+              </div>
+              <button class="btn btn-sm btn-blue" onclick="abrirCuadModal('${c.id}')">✏️ Editar</button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="card"><div class="card-title">Tipos de tarea</div>
+      ${TIPOS.map((t,i)=>`<div class="row"><div><div style="font-size:14px">${t.nombre}</div><div style="font-size:12px;color:#888">${t.solo_registra?'Solo registra':'Cada '+t.divisor+' = '+t.unidades+' equiv.'}</div></div>${i<6?'<span class="badge b-gray">Base</span>':`<button class="btn btn-sm btn-red" onclick="elimTipo('${t.id}')">✕</button>`}</div>`).join('')}
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:1rem 0">
+      <div class="card-title">Agregar tarea</div>
+      <div class="fg"><label>Nombre</label><input type="text" id="cfg-tn" placeholder="Ej: Migración"/></div>
+      <div class="fg"><label>Unidades para = 1 instalación</label><input type="number" id="cfg-te" step="0.5" placeholder="Ej: 3"/></div>
+      <div class="fg"><label>¿Cuántas instalaciones vale cada una?</label><input type="number" id="cfg-tu" step="0.5" value="1"/></div>
+      <div class="fg"><label>¿Solo registra?</label><select id="cfg-tr"><option value="0">No, suma</option><option value="1">Sí, solo registra</option></select></div>
+      <button class="btn btn-dark btn-sm" onclick="agregarTipo()">Agregar</button>
+      <p class="ok-msg" id="cfg-tareas-ok"></p>
+    </div>`;
+  }else{
+    el.innerHTML=`<div class="card"><div class="msg msg-info" style="margin-bottom:.9rem">La configuración solo puede modificarla el jefe (Gastón Llanes).</div>
+    ${TIPOS.map(t=>`<div class="row"><div style="font-size:14px">${t.nombre}</div><div style="font-size:12px;color:#888">${t.solo_registra?'Solo registra':'Cada '+t.divisor+' = '+t.unidades+' equiv.'}</div></div>`).join('')}
+    </div>`;
+  }
+}
+
+async function guardarConfigPrecio(){
+  const precio=document.getElementById('cfg-precio').value,meta=document.getElementById('cfg-meta').value;
+  await sbUpsert('configuracion',{clave:'precio_instalacion',valor:precio,solo_jefe:true,updated_by:CU.username});
+  await sbUpsert('configuracion',{clave:'meta_semanal',valor:meta,solo_jefe:true,updated_by:CU.username});
+  CONFIG.precio_instalacion=precio;CONFIG.meta_semanal=meta;
+  await logAct('Config precio',`$${precio}·meta ${meta}`,'configuracion');
+  document.getElementById('cfg-ok').textContent='Guardado ✓';
+}
+
+async function agregarTipo(){
+  const nombre=document.getElementById('cfg-tn').value.trim(),divisor=parseFloat(document.getElementById('cfg-te').value);
+  const unidades=parseFloat(document.getElementById('cfg-tu').value)||1,soloReg=document.getElementById('cfg-tr').value==='1';
+  if(!nombre||isNaN(divisor))return;
+  await sbPost('tipos_tarea',{id:'c_'+Date.now(),nombre,unidades,divisor,resta:false,solo_registra:soloReg,orden:99,activo:true});
+  await cargarTipos();buildTareasInputs();await logAct('Nueva tarea',nombre,'tipos_tarea');
+  document.getElementById('cfg-tareas-ok').textContent='Tarea agregada ✓';renderConfig();
+}
+async function elimTipo(id){await sbPatch('tipos_tarea',`?id=eq.${id}`,{activo:false});await cargarTipos();buildTareasInputs();renderConfig();}
+
+// EDITAR CUADRILLA
+function abrirCuadModal(cuadId){
+  editCuadId=cuadId;
+  const c=CUADRILLAS.find(x=>x.id===cuadId);if(!c)return;
+  document.getElementById('cuad-modal-title').textContent=`Editar cuadrilla · Grupo ${c.grupo}`;
+  document.getElementById('cuad-edit-nombre').value=c.nombre;
+  document.getElementById('cuad-edit-tec1').value=c.tec1||'';
+  document.getElementById('cuad-edit-tec2').value=c.tec2||'';
+  document.getElementById('cuad-modal-ok').textContent='';
+  document.getElementById('cuad-modal-err').textContent='';
+  document.getElementById('cuad-modal').classList.remove('hidden');
+}
+
+async function guardarCuadrilla(){
+  if(!editCuadId)return;
+  const nombre=document.getElementById('cuad-edit-nombre').value.trim();
+  const tec1=document.getElementById('cuad-edit-tec1').value.trim();
+  const tec2=document.getElementById('cuad-edit-tec2').value.trim();
+  if(!nombre||!tec1||!tec2){document.getElementById('cuad-modal-err').textContent='Completá todos los campos.';return;}
+  try{
+    await sbPatch('cuadrillas',`?id=eq.${editCuadId}`,{nombre,tec1,tec2});
+    await logAct('Config cuadrilla',`${editCuadId}: ${nombre} · ${tec1} · ${tec2}`,'cuadrillas');
+    // Actualizar en memoria
+    const idx=CUADRILLAS.findIndex(x=>x.id===editCuadId);
+    if(idx>=0){CUADRILLAS[idx].nombre=nombre;CUADRILLAS[idx].tec1=tec1;CUADRILLAS[idx].tec2=tec2;}
+    document.getElementById('cuad-modal-ok').textContent='Guardado ✓';
+    setTimeout(()=>{cerrarCuadModal();renderConfig();poblarSelects();},1000);
+  }catch(e){document.getElementById('cuad-modal-err').textContent='Error: '+e.message;}
+}
+function cerrarCuadModal(){document.getElementById('cuad-modal').classList.add('hidden');editCuadId=null;}
+
+// RANKING ADMIN
+async function renderAdmRanking(){
+  document.getElementById('adm-rank-cuad').innerHTML='<div class="loading"><span class="spinner"></span></div>';
+  document.getElementById('adm-rank-ind').innerHTML='<div class="loading"><span class="spinner"></span></div>';
+  const{rankCuad,rankInd}=await buildRankings();
+  document.getElementById('adm-rank-cuad').innerHTML=buildRankHTML(rankCuad,'cuad');
+  document.getElementById('adm-rank-ind').innerHTML=buildRankHTML(rankInd,'ind');
+}
+
+// LOG
+async function renderLog(){
+  // Ahora conectados (últimos 15 minutos)
+  const cardActivos=document.getElementById('log-activos-card');
+  if(cardActivos)cardActivos.style.display=CU&&CU.rol==='jefe'?'block':'none';
+  const elActivos=document.getElementById('log-activos');
+  if(elActivos&&CU&&CU.rol==='jefe'){
+    try{
+      const ahora=new Date();
+      const hace15=new Date(ahora-15*60*1000).toISOString();
+      const activos=await sbGet('sesiones_activas',`?ultimo_acceso=gte.${hace15}&order=ultimo_acceso.desc&select=*`);
+      if(!activos||!activos.length){
+        elActivos.innerHTML='<p style="font-size:13px;color:#999">Nadie conectado en los últimos 15 minutos.</p>';
+      }else{
+        const rolColor={jefe:'#8B5CF6',admin:'#2563EB',tecnico:'#1a7a3c'};
+        elActivos.innerHTML=activos.map(a=>{
+          const hace=Math.round((ahora-new Date(a.ultimo_acceso))/60000);
+          return`<div class="row">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;flex-shrink:0"></span>
+              <div><div style="font-size:14px;font-weight:600">${a.nombre}</div>
+              <div style="font-size:11px;color:#888">@${a.username} · <span style="color:${rolColor[a.rol]||'#888'}">${a.rol}</span></div></div>
+            </div>
+            <div style="font-size:12px;color:#888">hace ${hace<1?'menos de 1':hace} min</div>
+          </div>`;
+        }).join('');
+      }
+    }catch(e){elActivos.innerHTML='<p style="font-size:12px;color:#c0392b">Error.</p>';}
+  }
+  const el=document.getElementById('log-lista');el.innerHTML='<div class="loading"><span class="spinner"></span></div>';
+  const data=await sbGet('log_actividad','?order=created_at.desc&limit=60');
+  if(!data.length){el.innerHTML='<p style="font-size:13px;color:#999">Sin actividad.</p>';return;}
+  el.innerHTML=data.map(l=>{
+    const fecha=new Date(l.created_at).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return`<div style="padding:9px 0;border-bottom:1px solid #f0f0f0"><div style="font-size:13px;font-weight:600">${l.accion}</div><div style="font-size:12px;color:#666">${l.detalle||''}</div><div style="font-size:11px;color:#aaa">${l.usuario} · ${fecha}</div></div>`;
+  }).join('');
+}
+</script>
 </body>
 </html>
