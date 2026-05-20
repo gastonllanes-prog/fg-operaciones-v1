@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>FG Gestión OTs v377</title>
+<title>FG Gestión OTs v378</title>
 <style>
 :root{--bg:#f0f4f8;--bg2:#fff;--bg3:#f8fafc;--border:rgba(0,0,0,.1);--border2:rgba(0,0,0,.06);--text1:#1e293b;--text2:#64748b;--text3:#94a3b8;--accent:#2563eb;--accent-hover:#1d4ed8;--card-shadow:0 1px 4px rgba(0,0,0,.06)}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -272,7 +272,7 @@ body.gigared-view-mode #mobile-topbar{display:none !important}
       <p class="err-msg" id="l-err"></p>
       <button class="btn btn-primary btn-full" style="margin-top:.75rem" onclick="doLogin()"><span class="spinner" id="l-spin" style="display:none"></span>Ingresar</button>
     </div>
-    <div style="text-align:center;font-size:11px;color:#94a3b8;margin-top:1rem;letter-spacing:2px">FG GESTIÓN OTS · V377</div>
+    <div style="text-align:center;font-size:11px;color:#94a3b8;margin-top:1rem;letter-spacing:2px">FG GESTIÓN OTS · V378</div>
   </div>
 </div>
 
@@ -282,7 +282,7 @@ body.gigared-view-mode #mobile-topbar{display:none !important}
   <div class="sb-footer">
     <div class="sb-user" id="sb-nombre">—</div>
     <div class="sb-user-rol" id="sb-rol">—</div>
-    <div class="sb-ver" style="font-size:11px;font-weight:700;color:#2563eb;margin-top:5px">v377</div>
+    <div class="sb-ver" style="font-size:11px;font-weight:700;color:#2563eb;margin-top:5px">v378</div>
     <div id="sb-ver-stamp" style="font-size:9px;color:#94a3b8;margin-top:2px"></div>
     <button class="sb-logout" onclick="logout()">Cerrar sesión</button>
   </div>
@@ -1294,6 +1294,15 @@ body.gigared-view-mode #mobile-topbar{display:none !important}
     <div class="modal-title">Detalle OT <button class="modal-close" onclick="cerrarModal('ot-modal')">✕</button></div>
     <div id="ot-modal-body"><div class="loading"><span class="spinner"></span></div></div>
     <div class="modal-footer" id="ot-modal-footer"></div>
+  </div>
+</div>
+
+<!-- v378 — Modal de Sofía (gigared_view) para ver detalle OT en solo lectura -->
+<div class="modal-overlay hidden" id="gv-ot-modal">
+  <div class="modal" style="max-width:860px;max-height:92vh">
+    <div class="modal-title">📋 Detalle OT (solo lectura) <button class="modal-close" onclick="cerrarModal('gv-ot-modal')">✕</button></div>
+    <div id="gv-ot-modal-body"><div class="loading"><span class="spinner"></span></div></div>
+    <div class="modal-footer" id="gv-ot-modal-footer"></div>
   </div>
 </div>
 
@@ -21342,10 +21351,11 @@ async function gvAbrirCliente(codigo){
 
 // v320 — drill-down: buscar por número de OT desde un click en tabla
 async function gvAbrirOT(numOt){
-  const inp=document.getElementById('gv-busq-input');
-  if(inp) inp.value=numOt;
-  _GV.busqueda=numOt;
-  await gvBuscar();
+  // v378 — Ahora abre modal de detalle (solo lectura) en lugar de hacer búsqueda.
+  // Sofía puede revisar materiales, seriales, mano de obra y fotos para
+  // confrontar contra las OTs físicas (letras del técnico, etc.)
+  if(!numOt) return;
+  await gvVerOT(numOt);
 }
 
 // ── Render (3) ─────────────────────────────────────────────────────────
@@ -21745,6 +21755,274 @@ function gvRenderCoordinadas(){
   h+='</div>';
 
   return h;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// v378 — gvVerOT: detalle de OT en SOLO LECTURA para Sofía (gigared_view)
+// Espejo aislado de verOT(): mismas tablas (SELECT), pero
+//   - NO carga edificio ni archivos del edificio
+//   - footer solo con botón "Cerrar"
+//   - cero botones de acción (ni editar, ni cerrar, ni asignar, ni eliminar)
+// Se invoca desde gvAbrirOT (click en cualquier fila de la tabla de Sofía).
+// ═══════════════════════════════════════════════════════════════════════
+
+async function gvVerOT(numeroOT){
+  const body = document.getElementById('gv-ot-modal-body');
+  const footer = document.getElementById('gv-ot-modal-footer');
+  if(!body || !footer) return;
+  body.innerHTML = '<div class="loading"><span class="spinner"></span></div>';
+  footer.innerHTML = '<button class="btn" onclick="cerrarModal(\'gv-ot-modal\')">× Cerrar</button>';
+  abrirModal('gv-ot-modal');
+  try{
+    try{ auditLog('gigared_view','ver_detalle_ot',{numero_ot:numeroOT}); }catch(e){}
+    // Cargar OT (sin edificio ni archivos)
+    const r = await sbGet('ordenes_trabajo',
+      '?numero_ot=eq.'+encodeURIComponent(numeroOT)+
+      '&select=id,numero_ot,tipo_tarea,tipo_item,estado_id,grupo_id,equipo_instalado,tag,fecha_fin,fecha_coordinada,hora_coordinada,observaciones,obs_trabajo,obs_gigared,sintoma_reportado,fecha_devolucion_gigared,pendiente_devolucion,validado_admin_at,'+
+      'estados_ot(nombre),grupos_ot(id,cuadrilla_id,fecha_trabajo,cuadrillas(nombre)),'+
+      'clientes(id,codigo_gigared,apellido,nombre,calle,numero_domicilio,domicilio,barrio,localidad,nodo,telefono,celular)'+
+      '&eliminado=eq.false'
+    ) || [];
+    const ot = r[0];
+    if(!ot){ body.innerHTML = '<p style="color:#dc2626;padding:1rem">OT no encontrada.</p>'; return; }
+
+    const cl = ot.clientes || {};
+    const est = ot.estados_ot?.nombre || '';
+    const tieneCierre = est==='FINALIZADA' || est==='FINALIZADA_TECNICO' || est==='RECHAZADA_TECNICO';
+    const fmtF = d => d ? new Date(d+'T12:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+    const fmtFHora = d => {
+      if(!d) return '—';
+      const dt = new Date(d);
+      return dt.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' +
+             dt.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    };
+
+    // Cargar OTs hermanas del grupo (resumen del grupo)
+    let grupo = [];
+    if(ot.grupo_id){
+      grupo = await sbGet('ordenes_trabajo',
+        '?grupo_id=eq.'+ot.grupo_id+'&eliminado=eq.false'+
+        '&select=id,numero_ot,tipo_item,tipo_tarea,estados_ot(nombre)'
+      ) || [];
+      // Ordenar por jerarquía si la función existe (compat con render del admin)
+      if(typeof ordenJerarquiaOT === 'function'){
+        grupo.sort((a,b)=>ordenJerarquiaOT(a.tipo_item||a.tipo_tarea||'')-ordenJerarquiaOT(b.tipo_item||b.tipo_tarea||''));
+      }
+    }
+
+    // Items contratados de Gigared (lo que pidió el cliente)
+    let items = [];
+    try{ items = await sbGet('ot_items_contratados','?ot_id=eq.'+ot.id+'&select=descripcion,cantidad') || []; }
+    catch(e){}
+
+    // Si hay cierre, cargar materiales + servicios + seriales + fotos
+    let matsUsados=[], servRealiz=[], serialesCliente=[], fotosOT=[];
+    if(tieneCierre){
+      const promesas = await Promise.all([
+        sbGet('ot_materiales_usados','?ot_id=eq.'+ot.id+'&activo=eq.true&select=cantidad,catalogo_materiales(nombre,unidad,serial_tipo)'),
+        sbGet('ot_servicios_realizados','?ot_id=eq.'+ot.id+'&activo=eq.true&select=cantidad,catalogo_servicios(nombre,categoria)'),
+        sbGet('ot_fotos','?ot_id=eq.'+ot.id+'&select=id,url,nombre_archivo')
+      ]);
+      matsUsados = promesas[0] || [];
+      servRealiz = promesas[1] || [];
+      fotosOT = promesas[2] || [];
+      if(matsUsados.length){
+        serialesCliente = await sbGet('stock_seriales',
+          '?ot_id=eq.'+ot.id+'&select=serial,material_id,catalogo_materiales(nombre)'
+        ) || [];
+      }
+    }
+
+    // ─── Render HTML ───
+    const dom = cl.calle ? (cl.calle + (cl.numero_domicilio ? ' '+cl.numero_domicilio : '')) : (cl.domicilio || '—');
+    const domHtml = '<span style="font-weight:600">'+gvEsc(dom)+'</span>' +
+                    (cl.barrio ? ' · '+gvEsc(cl.barrio) : '') +
+                    (cl.localidad ? ' · '+gvEsc(cl.localidad) : '');
+
+    // Color del badge según estado
+    const colorEstado = {
+      'FINALIZADA':'#16a34a', 'FINALIZADA_TECNICO':'#0891b2', 'RECHAZADA_TECNICO':'#dc2626',
+      'ASIGNADA':'#2563eb', 'EN_PROCESO':'#d97706', 'PENDIENTE':'#64748b',
+      'DEVUELTA_GIGARED':'#991b1b', 'NO_REALIZADA':'#7c3aed', 'ELIMINADA_SISTEMA':'#475569'
+    }[est] || '#475569';
+
+    let html = '';
+
+    // Cabecera
+    html += '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px 16px;margin-bottom:14px">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:8px">';
+    html += '<div>';
+    html += '<div style="font-size:18px;font-weight:700;color:#1e293b">'+gvEsc(cl.apellido||'—')+' '+gvEsc(cl.nombre||'')+'</div>';
+    html += '<div style="font-size:13px;color:#64748b;margin-top:2px">Cliente <strong>'+gvEsc(cl.codigo_gigared||'—')+'</strong> · '+domHtml+'</div>';
+    if(cl.nodo) html += '<div style="font-size:12px;color:#64748b">Nodo: <strong>'+gvEsc(cl.nodo)+'</strong></div>';
+    html += '</div>';
+    html += '<span style="background:'+colorEstado+';color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:.04em">'+gvEsc(est||'SIN ESTADO')+'</span>';
+    html += '</div>';
+    html += '<div style="font-size:13px;color:#475569"><strong>OT '+gvEsc(ot.numero_ot)+'</strong> · '+gvEsc(ot.tipo_tarea||'')+' / <strong>'+gvEsc(ot.tipo_item||'')+'</strong></div>';
+    if(ot.grupos_ot?.cuadrillas?.nombre){
+      html += '<div style="font-size:12px;color:#475569;margin-top:2px">Cuadrilla: <strong>'+gvEsc(ot.grupos_ot.cuadrillas.nombre)+'</strong></div>';
+    }
+    if(ot.grupos_ot?.fecha_trabajo){
+      html += '<div style="font-size:12px;color:#475569">Fecha trabajo: <strong>'+fmtF(ot.grupos_ot.fecha_trabajo)+'</strong></div>';
+    }
+    if(ot.fecha_fin){
+      html += '<div style="font-size:12px;color:#475569">Fecha cierre: <strong>'+fmtF(String(ot.fecha_fin).substring(0,10))+'</strong></div>';
+    }
+    if(ot.validado_admin_at){
+      html += '<div style="font-size:12px;color:#16a34a;font-weight:600;margin-top:4px">✓ Validada por admin: '+fmtFHora(ot.validado_admin_at)+'</div>';
+    }
+    html += '</div>';
+
+    // Grupo (resumen de OTs hermanas)
+    if(grupo.length > 1){
+      html += '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 14px;margin-bottom:14px">';
+      html += '<div style="font-weight:700;font-size:13px;color:#1e3a8a;margin-bottom:6px">📋 Grupo de OTs ('+grupo.length+' total)</div>';
+      grupo.forEach(g=>{
+        const isCurrent = g.id === ot.id;
+        const estG = g.estados_ot?.nombre || '';
+        html += '<div style="font-size:12px;color:#1e40af;padding:3px 0'+(isCurrent?';font-weight:700':'')+'">';
+        html += (isCurrent?'▶ ':'· ')+gvEsc(g.numero_ot)+' — '+gvEsc(g.tipo_item||g.tipo_tarea||'')+' ('+gvEsc(estG)+')';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Items contratados (lo que pidió Gigared)
+    if(items.length){
+      html += '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:14px">';
+      html += '<div style="font-weight:700;font-size:13px;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">📦 Items contratados por Gigared</div>';
+      items.forEach(it=>{
+        html += '<div style="font-size:13px;color:#475569;padding:2px 0">'+
+                '<strong>'+gvEsc(String(it.cantidad||1))+'×</strong> '+gvEsc(it.descripcion||'—')+
+                '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Síntoma reportado / observación de Gigared
+    if(ot.sintoma_reportado || ot.obs_gigared){
+      html += '<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:14px;line-height:1.5">';
+      if(ot.sintoma_reportado){ html += '<strong>Síntoma reportado:</strong> '+gvEsc(ot.sintoma_reportado)+'<br>'; }
+      if(ot.obs_gigared){ html += '<strong>Obs. Gigared:</strong> '+gvEsc(ot.obs_gigared); }
+      html += '</div>';
+    }
+
+    // Sección de cierre (materiales, servicios, seriales, fotos)
+    if(tieneCierre){
+      // Equipo instalado y precinto destacados
+      if(ot.equipo_instalado || ot.tag){
+        html += '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 14px;margin-bottom:14px">';
+        html += '<div style="font-weight:700;font-size:13px;color:#166534;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">🔌 Equipo y precinto</div>';
+        if(ot.equipo_instalado){
+          html += '<div style="font-size:14px;color:#166534;padding:2px 0"><strong>Equipo instalado (MAC/Serial):</strong> <span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;font-weight:700">'+gvEsc(ot.equipo_instalado)+'</span></div>';
+        }
+        if(ot.tag){
+          html += '<div style="font-size:14px;color:#166534;padding:2px 0"><strong>Precinto:</strong> <span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;font-weight:700">'+gvEsc(ot.tag)+'</span></div>';
+        }
+        html += '</div>';
+      }
+
+      // Materiales usados
+      html += '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:14px">';
+      html += '<div style="font-weight:700;font-size:13px;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">🔧 Materiales usados ('+matsUsados.length+')</div>';
+      if(matsUsados.length){
+        html += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+        html += '<thead><tr style="background:#f8fafc;border-bottom:1px solid #e2e8f0"><th style="text-align:left;padding:6px 8px;font-size:11px;text-transform:uppercase;color:#64748b">Material</th><th style="text-align:right;padding:6px 8px;font-size:11px;text-transform:uppercase;color:#64748b;width:80px">Cantidad</th></tr></thead><tbody>';
+        matsUsados.forEach(m=>{
+          const nom = m.catalogo_materiales?.nombre || '—';
+          const uni = m.catalogo_materiales?.unidad || '';
+          html += '<tr style="border-bottom:1px solid #f1f5f9">'+
+                  '<td style="padding:6px 8px;color:#1e293b">'+gvEsc(nom)+'</td>'+
+                  '<td style="padding:6px 8px;text-align:right;font-weight:600;color:#1e293b">'+gvEsc(String(m.cantidad||0))+(uni?' '+gvEsc(uni):'')+'</td>'+
+                  '</tr>';
+        });
+        html += '</tbody></table>';
+      } else {
+        html += '<div style="font-size:13px;color:#94a3b8;font-style:italic">Sin materiales registrados.</div>';
+      }
+      html += '</div>';
+
+      // Seriales registrados
+      if(serialesCliente.length){
+        html += '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:14px">';
+        html += '<div style="font-weight:700;font-size:13px;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">🔢 Seriales registrados ('+serialesCliente.length+')</div>';
+        html += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+        html += '<thead><tr style="background:#f8fafc;border-bottom:1px solid #e2e8f0"><th style="text-align:left;padding:6px 8px;font-size:11px;text-transform:uppercase;color:#64748b">Material</th><th style="text-align:left;padding:6px 8px;font-size:11px;text-transform:uppercase;color:#64748b">Serial</th></tr></thead><tbody>';
+        serialesCliente.forEach(s=>{
+          const nom = s.catalogo_materiales?.nombre || '—';
+          html += '<tr style="border-bottom:1px solid #f1f5f9">'+
+                  '<td style="padding:6px 8px;color:#1e293b">'+gvEsc(nom)+'</td>'+
+                  '<td style="padding:6px 8px;font-family:monospace;font-weight:600;color:#1e293b">'+gvEsc(s.serial||'—')+'</td>'+
+                  '</tr>';
+        });
+        html += '</tbody></table>';
+        html += '</div>';
+      }
+
+      // Servicios realizados (mano de obra)
+      html += '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:14px">';
+      html += '<div style="font-weight:700;font-size:13px;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">👷 Mano de obra ('+servRealiz.length+')</div>';
+      if(servRealiz.length){
+        html += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+        html += '<thead><tr style="background:#f8fafc;border-bottom:1px solid #e2e8f0"><th style="text-align:left;padding:6px 8px;font-size:11px;text-transform:uppercase;color:#64748b">Servicio</th><th style="text-align:left;padding:6px 8px;font-size:11px;text-transform:uppercase;color:#64748b;width:120px">Categoría</th><th style="text-align:right;padding:6px 8px;font-size:11px;text-transform:uppercase;color:#64748b;width:80px">Cantidad</th></tr></thead><tbody>';
+        servRealiz.forEach(s=>{
+          const nom = s.catalogo_servicios?.nombre || '—';
+          const cat = s.catalogo_servicios?.categoria || '—';
+          html += '<tr style="border-bottom:1px solid #f1f5f9">'+
+                  '<td style="padding:6px 8px;color:#1e293b">'+gvEsc(nom)+'</td>'+
+                  '<td style="padding:6px 8px;color:#64748b;font-size:12px">'+gvEsc(cat)+'</td>'+
+                  '<td style="padding:6px 8px;text-align:right;font-weight:600;color:#1e293b">'+gvEsc(String(s.cantidad||0))+'</td>'+
+                  '</tr>';
+        });
+        html += '</tbody></table>';
+      } else {
+        html += '<div style="font-size:13px;color:#94a3b8;font-style:italic">Sin servicios registrados.</div>';
+      }
+      html += '</div>';
+
+      // Observación del trabajo (notas del técnico/admin)
+      if(ot.obs_trabajo){
+        html += '<div style="background:#fffbeb;border:1px solid #fcd34d;color:#78350f;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:14px;line-height:1.5">';
+        html += '<strong>📝 Observación del trabajo:</strong><br>'+gvEsc(ot.obs_trabajo);
+        html += '</div>';
+      }
+
+      // Fotos
+      if(fotosOT.length){
+        html += '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:14px">';
+        html += '<div style="font-weight:700;font-size:13px;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">📷 Fotos ('+fotosOT.length+')</div>';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">';
+        fotosOT.forEach(f=>{
+          if(!f.url) return;
+          html += '<a href="'+gvEsc(f.url)+'" target="_blank" style="display:block;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;background:#f8fafc">'+
+                  '<img src="'+gvEsc(f.url)+'" alt="'+gvEsc(f.nombre_archivo||'foto')+'" style="width:100%;height:120px;object-fit:cover;display:block" loading="lazy">'+
+                  '</a>';
+        });
+        html += '</div>';
+        html += '<div style="font-size:11px;color:#94a3b8;margin-top:6px">Click en una foto para verla en grande</div>';
+        html += '</div>';
+      }
+    } else {
+      // Si no hay cierre todavía
+      html += '<div style="background:#f8fafc;border:1px dashed #cbd5e1;color:#64748b;padding:16px;border-radius:8px;font-size:13px;text-align:center;margin-bottom:14px">';
+      html += 'Esta OT aún no fue cerrada. Los materiales, seriales y mano de obra se cargan al cerrar.';
+      html += '</div>';
+    }
+
+    // Devolución a Gigared (si aplica)
+    if(est === 'DEVUELTA_GIGARED'){
+      html += '<div style="background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;padding:12px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;line-height:1.5">';
+      html += '<div style="font-weight:700;margin-bottom:4px">↩ Devolución a Gigared</div>';
+      html += '<div><strong>Fecha:</strong> '+fmtF(ot.fecha_devolucion_gigared)+'</div>';
+      html += '<div><strong>Motivo:</strong> '+gvEsc(ot.obs_trabajo || 'sin motivo registrado')+'</div>';
+      html += '</div>';
+    }
+
+    body.innerHTML = html;
+  }catch(e){
+    body.innerHTML = '<p style="color:#dc2626;padding:1rem">Error al cargar la OT: '+gvEsc(e.message||'desconocido')+'</p>';
+    console.error('[gvVerOT]', e);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
